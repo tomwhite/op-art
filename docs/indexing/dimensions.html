@@ -1,0 +1,391 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>op-art</title>
+    <script src="../require.js"></script>
+    <link href="../op_art.css" rel="stylesheet" />
+  </head>
+
+  <body>
+    <div id="plot"></div>
+
+    <script>
+      require.config({
+        baseUrl: "..",
+        paths: {
+          d3: 'https://d3js.org/d3.v5.min'
+        }
+      });
+      require(["op_art"], function(op_art) {
+        const arrs = [
+  {
+    "id": 0,
+    "kind": "i",
+    "ndim": 0,
+    "shape": [],
+    "cells": [
+      {
+        "id": "0_0",
+        "index": [],
+        "value": 0,
+        "sources": null
+      }
+    ]
+  },
+  {
+    "id": 2,
+    "kind": "i",
+    "ndim": 1,
+    "shape": [
+      2
+    ],
+    "cells": [
+      {
+        "id": "2_0",
+        "index": [
+          0
+        ],
+        "value": 0,
+        "sources": null
+      },
+      {
+        "id": "2_8",
+        "index": [
+          1
+        ],
+        "value": 1,
+        "sources": null
+      }
+    ]
+  },
+  {
+    "id": 4,
+    "kind": "i",
+    "ndim": 2,
+    "shape": [
+      3,
+      2
+    ],
+    "cells": [
+      {
+        "id": "4_0",
+        "index": [
+          0,
+          0
+        ],
+        "value": 0,
+        "sources": null
+      },
+      {
+        "id": "4_8",
+        "index": [
+          0,
+          1
+        ],
+        "value": 1,
+        "sources": null
+      },
+      {
+        "id": "4_16",
+        "index": [
+          1,
+          0
+        ],
+        "value": 2,
+        "sources": null
+      },
+      {
+        "id": "4_24",
+        "index": [
+          1,
+          1
+        ],
+        "value": 3,
+        "sources": null
+      },
+      {
+        "id": "4_32",
+        "index": [
+          2,
+          0
+        ],
+        "value": 4,
+        "sources": null
+      },
+      {
+        "id": "4_40",
+        "index": [
+          2,
+          1
+        ],
+        "value": 5,
+        "sources": null
+      }
+    ]
+  },
+  {
+    "id": 6,
+    "kind": "i",
+    "ndim": 3,
+    "shape": [
+      4,
+      3,
+      2
+    ],
+    "cells": [
+      {
+        "id": "6_0",
+        "index": [
+          0,
+          0,
+          0
+        ],
+        "value": 0,
+        "sources": null
+      },
+      {
+        "id": "6_8",
+        "index": [
+          0,
+          0,
+          1
+        ],
+        "value": 1,
+        "sources": null
+      },
+      {
+        "id": "6_16",
+        "index": [
+          0,
+          1,
+          0
+        ],
+        "value": 2,
+        "sources": null
+      },
+      {
+        "id": "6_24",
+        "index": [
+          0,
+          1,
+          1
+        ],
+        "value": 3,
+        "sources": null
+      },
+      {
+        "id": "6_32",
+        "index": [
+          0,
+          2,
+          0
+        ],
+        "value": 4,
+        "sources": null
+      },
+      {
+        "id": "6_40",
+        "index": [
+          0,
+          2,
+          1
+        ],
+        "value": 5,
+        "sources": null
+      },
+      {
+        "id": "6_48",
+        "index": [
+          1,
+          0,
+          0
+        ],
+        "value": 6,
+        "sources": null
+      },
+      {
+        "id": "6_56",
+        "index": [
+          1,
+          0,
+          1
+        ],
+        "value": 7,
+        "sources": null
+      },
+      {
+        "id": "6_64",
+        "index": [
+          1,
+          1,
+          0
+        ],
+        "value": 8,
+        "sources": null
+      },
+      {
+        "id": "6_72",
+        "index": [
+          1,
+          1,
+          1
+        ],
+        "value": 9,
+        "sources": null
+      },
+      {
+        "id": "6_80",
+        "index": [
+          1,
+          2,
+          0
+        ],
+        "value": 10,
+        "sources": null
+      },
+      {
+        "id": "6_88",
+        "index": [
+          1,
+          2,
+          1
+        ],
+        "value": 11,
+        "sources": null
+      },
+      {
+        "id": "6_96",
+        "index": [
+          2,
+          0,
+          0
+        ],
+        "value": 12,
+        "sources": null
+      },
+      {
+        "id": "6_104",
+        "index": [
+          2,
+          0,
+          1
+        ],
+        "value": 13,
+        "sources": null
+      },
+      {
+        "id": "6_112",
+        "index": [
+          2,
+          1,
+          0
+        ],
+        "value": 14,
+        "sources": null
+      },
+      {
+        "id": "6_120",
+        "index": [
+          2,
+          1,
+          1
+        ],
+        "value": 15,
+        "sources": null
+      },
+      {
+        "id": "6_128",
+        "index": [
+          2,
+          2,
+          0
+        ],
+        "value": 16,
+        "sources": null
+      },
+      {
+        "id": "6_136",
+        "index": [
+          2,
+          2,
+          1
+        ],
+        "value": 17,
+        "sources": null
+      },
+      {
+        "id": "6_144",
+        "index": [
+          3,
+          0,
+          0
+        ],
+        "value": 18,
+        "sources": null
+      },
+      {
+        "id": "6_152",
+        "index": [
+          3,
+          0,
+          1
+        ],
+        "value": 19,
+        "sources": null
+      },
+      {
+        "id": "6_160",
+        "index": [
+          3,
+          1,
+          0
+        ],
+        "value": 20,
+        "sources": null
+      },
+      {
+        "id": "6_168",
+        "index": [
+          3,
+          1,
+          1
+        ],
+        "value": 21,
+        "sources": null
+      },
+      {
+        "id": "6_176",
+        "index": [
+          3,
+          2,
+          0
+        ],
+        "value": 22,
+        "sources": null
+      },
+      {
+        "id": "6_184",
+        "index": [
+          3,
+          2,
+          1
+        ],
+        "value": 23,
+        "sources": null
+      }
+    ]
+  }
+];
+        const lines = [
+  "a = xp.asarray(0)",
+  "b = xp.reshape(xp.arange(2), (2,))",
+  "c = xp.reshape(xp.arange(6), (3, 2))",
+  "d = xp.reshape(xp.arange(24), (4, 3, 2))"
+];
+
+        op_art.visualize("#plot", arrs, lines, 1500, true);
+      });
+    </script>
+  </body>
+</html>

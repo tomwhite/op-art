@@ -1,0 +1,26 @@
+.cell-rect {
+  stroke: #cdcdcd;
+  /* fill-opacity: 1; */
+}
+.cell-text {
+  font-family: Courier, sans-serif;
+  font-size: 14px;
+  text-anchor: middle;
+  dominant-baseline: central;
+  pointer-events: none;
+}
+.fixed-text {
+  font-family: Courier, sans-serif;
+  /* font-size: 20px; */
+  text-anchor: start;
+  dominant-baseline: hanging;
+  pointer-events: none;
+  white-space: pre;
+}
+.dimension-line {
+  stroke: black;
+}
+.reload {
+  font-family: Lucida Sans Unicode;
+  cursor: pointer;
+}

@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>op-art</title>
+    <script src="../require.js"></script>
+    <link href="../op_art.css" rel="stylesheet" />
+  </head>
+
+  <body>
+    <div id="plot"></div>
+
+    <script>
+      require.config({
+        baseUrl: "..",
+        paths: {
+          d3: 'https://d3js.org/d3.v5.min'
+        }
+      });
+      require(["op_art"], function(op_art) {
+        const arrs = [
+  {
+    "id": 0,
+    "kind": "i",
+    "ndim": 2,
+    "shape": [
+      6,
+      1
+    ],
+    "cells": [
+      {
+        "id": "0_0",
+        "index": [
+          0,
+          0
+        ],
+        "value": 0,
+        "sources": null
+      },
+      {
+        "id": "0_8",
+        "index": [
+          1,
+          0
+        ],
+        "value": 1,
+        "sources": null
+      },
+      {
+        "id": "0_16",
+        "index": [
+          2,
+          0
+        ],
+        "value": 1,
+        "sources": null
+      },
+      {
+        "id": "0_24",
+        "index": [
+          3,
+          0
+        ],
+        "value": 1,
+        "sources": null
+      },
+      {
+        "id": "0_32",
+        "index": [
+          4,
+          0
+        ],
+        "value": 0,
+        "sources": null
+      },
+      {
+        "id": "0_40",
+        "index": [
+          5,
+          0
+        ],
+        "value": 1,
+        "sources": null
+      }
+    ]
+  },
+  {
+    "id": 1,
+    "kind": "i",
+    "ndim": 1,
+    "shape": [
+      6
+    ],
+    "cells": [
+      {
+        "id": "1_0",
+        "index": [
+          0
+        ],
+        "value": 0,
+        "sources": [
+          "0_0"
+        ]
+      },
+      {
+        "id": "1_8",
+        "index": [
+          1
+        ],
+        "value": 1,
+        "sources": [
+          "0_8"
+        ]
+      },
+      {
+        "id": "1_16",
+        "index": [
+          2
+        ],
+        "value": 1,
+        "sources": [
+          "0_16"
+        ]
+      },
+      {
+        "id": "1_24",
+        "index": [
+          3
+        ],
+        "value": 1,
+        "sources": [
+          "0_24"
+        ]
+      },
+      {
+        "id": "1_32",
+        "index": [
+          4
+        ],
+        "value": 0,
+        "sources": [
+          "0_32"
+        ]
+      },
+      {
+        "id": "1_40",
+        "index": [
+          5
+        ],
+        "value": 1,
+        "sources": [
+          "0_40"
+        ]
+      }
+    ]
+  }
+];
+        const lines = [
+  "a = xp.asarray([[0], [1], [1], [1], [0], [1]])",
+  "b = xp.squeeze(a, axis=1)"
+];
+
+        op_art.visualize("#plot", arrs, lines, 1500, true);
+      });
+    </script>
+  </body>
+</html>

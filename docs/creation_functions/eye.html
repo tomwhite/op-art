@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>op-art</title>
+    <script src="../require.js"></script>
+    <link href="../op_art.css" rel="stylesheet" />
+  </head>
+
+  <body>
+    <div id="plot"></div>
+
+    <script>
+      require.config({
+        baseUrl: "..",
+        paths: {
+          d3: 'https://d3js.org/d3.v5.min'
+        }
+      });
+      require(["op_art"], function(op_art) {
+        const arrs = [
+  {
+    "id": 0,
+    "kind": "f",
+    "ndim": 2,
+    "shape": [
+      3,
+      2
+    ],
+    "cells": [
+      {
+        "id": "0_0",
+        "index": [
+          0,
+          0
+        ],
+        "value": 1.0,
+        "sources": null
+      },
+      {
+        "id": "0_8",
+        "index": [
+          0,
+          1
+        ],
+        "value": 0.0,
+        "sources": null
+      },
+      {
+        "id": "0_16",
+        "index": [
+          1,
+          0
+        ],
+        "value": 0.0,
+        "sources": null
+      },
+      {
+        "id": "0_24",
+        "index": [
+          1,
+          1
+        ],
+        "value": 1.0,
+        "sources": null
+      },
+      {
+        "id": "0_32",
+        "index": [
+          2,
+          0
+        ],
+        "value": 0.0,
+        "sources": null
+      },
+      {
+        "id": "0_40",
+        "index": [
+          2,
+          1
+        ],
+        "value": 0.0,
+        "sources": null
+      }
+    ]
+  }
+];
+        const lines = [
+  "a = xp.eye(3, 2)"
+];
+
+        op_art.visualize("#plot", arrs, lines, 1500, true);
+      });
+    </script>
+  </body>
+</html>

@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>op-art</title>
+    <script src="../require.js"></script>
+    <link href="../op_art.css" rel="stylesheet" />
+  </head>
+
+  <body>
+    <div id="plot"></div>
+
+    <script>
+      require.config({
+        baseUrl: "..",
+        paths: {
+          d3: 'https://d3js.org/d3.v5.min'
+        }
+      });
+      require(["op_art"], function(op_art) {
+        const arrs = [
+  {
+    "id": 0,
+    "kind": "f",
+    "ndim": 1,
+    "shape": [
+      5
+    ],
+    "cells": [
+      {
+        "id": "0_0",
+        "index": [
+          0
+        ],
+        "value": 2.0,
+        "sources": null
+      },
+      {
+        "id": "0_8",
+        "index": [
+          1
+        ],
+        "value": 2.25,
+        "sources": null
+      },
+      {
+        "id": "0_16",
+        "index": [
+          2
+        ],
+        "value": 2.5,
+        "sources": null
+      },
+      {
+        "id": "0_24",
+        "index": [
+          3
+        ],
+        "value": 2.75,
+        "sources": null
+      },
+      {
+        "id": "0_32",
+        "index": [
+          4
+        ],
+        "value": 3.0,
+        "sources": null
+      }
+    ]
+  }
+];
+        const lines = [
+  "a = xp.linspace(2.0, 3.0, num=5)"
+];
+
+        op_art.visualize("#plot", arrs, lines, 1500, true);
+      });
+    </script>
+  </body>
+</html>

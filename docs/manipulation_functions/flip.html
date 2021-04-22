@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>op-art</title>
+    <script src="../require.js"></script>
+    <link href="../op_art.css" rel="stylesheet" />
+  </head>
+
+  <body>
+    <div id="plot"></div>
+
+    <script>
+      require.config({
+        baseUrl: "..",
+        paths: {
+          d3: 'https://d3js.org/d3.v5.min'
+        }
+      });
+      require(["op_art"], function(op_art) {
+        const arrs = [
+  {
+    "id": 1,
+    "kind": "i",
+    "ndim": 2,
+    "shape": [
+      3,
+      2
+    ],
+    "cells": [
+      {
+        "id": "1_0",
+        "index": [
+          0,
+          0
+        ],
+        "value": 0,
+        "sources": null
+      },
+      {
+        "id": "1_8",
+        "index": [
+          0,
+          1
+        ],
+        "value": 1,
+        "sources": null
+      },
+      {
+        "id": "1_16",
+        "index": [
+          1,
+          0
+        ],
+        "value": 2,
+        "sources": null
+      },
+      {
+        "id": "1_24",
+        "index": [
+          1,
+          1
+        ],
+        "value": 3,
+        "sources": null
+      },
+      {
+        "id": "1_32",
+        "index": [
+          2,
+          0
+        ],
+        "value": 4,
+        "sources": null
+      },
+      {
+        "id": "1_40",
+        "index": [
+          2,
+          1
+        ],
+        "value": 5,
+        "sources": null
+      }
+    ]
+  },
+  {
+    "id": 2,
+    "kind": "i",
+    "ndim": 2,
+    "shape": [
+      3,
+      2
+    ],
+    "cells": [
+      {
+        "id": "2_-32",
+        "index": [
+          2,
+          0
+        ],
+        "value": 0,
+        "sources": [
+          "1_0"
+        ]
+      },
+      {
+        "id": "2_-24",
+        "index": [
+          2,
+          1
+        ],
+        "value": 1,
+        "sources": [
+          "1_8"
+        ]
+      },
+      {
+        "id": "2_-16",
+        "index": [
+          1,
+          0
+        ],
+        "value": 2,
+        "sources": [
+          "1_16"
+        ]
+      },
+      {
+        "id": "2_-8",
+        "index": [
+          1,
+          1
+        ],
+        "value": 3,
+        "sources": [
+          "1_24"
+        ]
+      },
+      {
+        "id": "2_0",
+        "index": [
+          0,
+          0
+        ],
+        "value": 4,
+        "sources": [
+          "1_32"
+        ]
+      },
+      {
+        "id": "2_8",
+        "index": [
+          0,
+          1
+        ],
+        "value": 5,
+        "sources": [
+          "1_40"
+        ]
+      }
+    ]
+  }
+];
+        const lines = [
+  "a = xp.reshape(xp.arange(6), (3, 2))",
+  "b = xp.flip(a, axis=0)"
+];
+
+        op_art.visualize("#plot", arrs, lines, 1500, true);
+      });
+    </script>
+  </body>
+</html>
