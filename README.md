@@ -10,7 +10,7 @@ The goal of **op-art** is to help understand array operations in NumPy (and rela
 
 The idea is to make it easy for you to generate visualizations for your own code with very little effort. This is achieved by providing an implementation of the fledgling [Python array API standard](https://data-apis.org/array-api/latest/index.html) that tracks cell-level dependencies between arrays being operated on, and using that information to produce interactive animations of the operations in a code snippet. You can then switch the array namespace to `op_art` and run your code unchanged.
 
-Here's a slightly more advanced [example](https://tomwhite.github.io/op-art/docs/misc/reshape_flip_reshape.html) that runs `reshape`, then `flip`, then `reshape` on an array.
+Here's a slightly more advanced [example](https://tomwhite.github.io/op-art/misc/reshape_flip_reshape.html) that runs `reshape`, then `flip`, then `reshape` on an array.
 
 The array standard is in most cases identical to NumPy - the reason it was chosen here was because it is more tractable than NumPy, which has a very large API.
 
@@ -104,7 +104,7 @@ The data model described above makes it possible to produce a visualization that
 
 ![Reshape animation](reshape.gif)
 
-The implementation here uses [D3](https://d3js.org/), and the idea of [object constancy](https://bost.ocks.org/mike/constancy/) to animate cells from an input array to an output. Some cells have multiple sources from multiple arrays (such as [`matmul`](https://tomwhite.github.io/op-art/docs/linear_algebra_functions/matmul.html)), which this model is flexible enough to support.
+The implementation here uses [D3](https://d3js.org/), and the idea of [object constancy](https://bost.ocks.org/mike/constancy/) to animate cells from an input array to an output. Some cells have multiple sources from multiple arrays (such as [`matmul`](https://tomwhite.github.io/op-art/linear_algebra_functions/matmul.html)), which this model is flexible enough to support.
 
 ### Development
 
