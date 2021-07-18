@@ -141,16 +141,19 @@ define("op_art", ["d3"], function (d3) {
   /*
    * Compute the display width and height of a cell for all given arrays.
    */
-  function computeCellDim(container, objects, minCellWidth) {
+  function computeCellDim(container, objects, minCellWidth, showValues) {
     if (objects[0].cells) { // array-api
-      const valuesAsText = [];
-      for (const o of objects) {
-        if (!isString(o)) {
-          const vals = arrayElements(o).map((d) => formatValue(d.value));
-          valuesAsText.push(...vals);
+      let max = 0;
+      if (showValues) {
+        const valuesAsText = [];
+        for (const o of objects) {
+          if (!isString(o)) {
+            const vals = arrayElements(o).map((d) => formatValue(d.value));
+            valuesAsText.push(...vals);
+          }
         }
+        max = Math.max(...computeTextWidths(container, valuesAsText));  
       }
-      const max = Math.max(...computeTextWidths(container, valuesAsText));
       const cellWidth = Math.max(minCellWidth, max);
       const cellHeight = minCellWidth;
       return [cellWidth, cellHeight];
@@ -245,7 +248,8 @@ define("op_art", ["d3"], function (d3) {
     codeLine,
     cellWidth,
     cellHeight,
-    duration
+    duration,
+    showValues
   ) {
 
     // Draw line of code
@@ -324,7 +328,8 @@ define("op_art", ["d3"], function (d3) {
       g,
       arrayElements(ndarr),
       duration,
-      0
+      0,
+      showValues
     );
   }
 
@@ -333,6 +338,7 @@ define("op_art", ["d3"], function (d3) {
     cells,
     duration,
     delay,
+    showValues,
     callback
   ) {
     function frontToBack(a, b) {
@@ -359,14 +365,16 @@ define("op_art", ["d3"], function (d3) {
               .attr("width", d => d.width)
               .attr("height", d => d.height)
               .attr("fill", (d) => d.fill);
-            gCell
-              .append("text")
-              .attr("class", "cell-text")
-              .text((d) => formatValue(d.value))
-              .attr("x", 0)
-              .attr("y", 0)
-              .attr("dx", d => d.width / 2)
-              .attr("dy", d => d.height / 2);
+            if (showValues) {
+              gCell
+                .append("text")
+                .attr("class", "cell-text")
+                .text((d) => formatValue(d.value))
+                .attr("x", 0)
+                .attr("y", 0)
+                .attr("dx", d => d.width / 2)
+                .attr("dy", d => d.height / 2);
+            }
             gCell.append("title").text((d) => d.title);
             gCell
               .transition()
@@ -440,11 +448,11 @@ define("op_art", ["d3"], function (d3) {
   }
 
   // objects is an array of representations
-  function visualize(container, objects, lines, duration, animate, rankdir) {
+  function visualize(container, objects, lines, duration, animate, rankdir, showValues) {
     const reprs = objects;
     const cellPadding = 30;
     const minCellWidth = 30;
-    const cellDim = computeCellDim(container, reprs, minCellWidth);
+    const cellDim = computeCellDim(container, reprs, minCellWidth, showValues);
     const cellWidth = cellDim[0];
     const cellHeight = cellDim[1];
     const objectWidths = computeWidths(container, reprs, cellWidth).map(
@@ -552,7 +560,8 @@ define("op_art", ["d3"], function (d3) {
         line,
         cellWidth,
         cellHeight,
-        duration
+        duration,
+        showValues
       );
 
       // If no animation go to next
@@ -603,7 +612,8 @@ define("op_art", ["d3"], function (d3) {
           group,
           startCells,
           duration,
-          delay
+          delay,
+          showValues
         );
 
         const afterCellGroup = () => {
@@ -628,6 +638,7 @@ define("op_art", ["d3"], function (d3) {
           endCells,
           duration,
           delay,
+          showValues,
           i < cellGroups.length - 1 ? afterCellGroup : afterLastCellGroup
         );
         delay += 1000;

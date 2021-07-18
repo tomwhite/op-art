@@ -465,7 +465,7 @@ def strings_to_json(strings):
 def boolean_to_js(v):
     return "true" if v else "false"
 
-def arrays_to_html(arrays, lines, base_url=".", animate=True, rankdir="TB"):
+def arrays_to_html(arrays, lines, base_url=".", animate=True, rankdir="TB", show_values=True):
     require_js_path = f"{base_url}/require.js"
     op_art_css_path = f"{base_url}/op_art.css"
     return """<!DOCTYPE html>
@@ -491,16 +491,16 @@ def arrays_to_html(arrays, lines, base_url=".", animate=True, rankdir="TB"):
         const arrs = %s;
         const lines = %s;
 
-        op_art.visualize("#plot", arrs, lines, 1500, %s, "%s");
+        op_art.visualize("#plot", arrs, lines, 1500, %s, "%s", %s);
       });
     </script>
   </body>
-</html>""" % (require_js_path, op_art_css_path, base_url, arrays_to_json(arrays), strings_to_json(lines), boolean_to_js(animate), rankdir)
+</html>""" % (require_js_path, op_art_css_path, base_url, arrays_to_json(arrays), strings_to_json(lines), boolean_to_js(animate), rankdir, boolean_to_js(show_values))
 
-def write_html(filename, arrs, lines, base_url=".", animate=True, rankdir="TB"):
+def write_html(filename, arrs, lines, base_url=".", animate=True, rankdir="TB", show_values=True):
     os.makedirs(os.path.dirname(filename), exist_ok=True)
     with open(filename, "w") as f:
-        f.write(arrays_to_html(arrs, lines, base_url=base_url, animate=animate, rankdir=rankdir))
+        f.write(arrays_to_html(arrs, lines, base_url=base_url, animate=animate, rankdir=rankdir, show_values=show_values))
 
 
 def get_source(fn):
@@ -513,7 +513,7 @@ def get_source(fn):
     return src.split("\n")
 
 
-def visualize(*arrays, animate=True, rankdir="TB"):
+def visualize(*arrays, animate=True, rankdir="TB", show_values=True):
     from IPython.display import display, Javascript
     import inspect
     frame = inspect.currentframe()
@@ -528,13 +528,14 @@ def visualize(*arrays, animate=True, rankdir="TB"):
 
     js = """(function(element){
     require(['op_art'], function(op_art) {
-        op_art.visualize(element.get(0), %s, %s, 1500, %s, "%s");
+        op_art.visualize(element.get(0), %s, %s, 1500, %s, "%s", %s);
     });
 })(element);""" % (
         arrays_to_json(arrays),
         vars,
         boolean_to_js(animate),
-        rankdir
+        rankdir,
+        boolean_to_js(show_values),
     )
 
     return display(Javascript(js))
