@@ -362,7 +362,7 @@ define("op_art", ["d3"], function (d3) {
             gCell
               .append("text")
               .attr("class", "cell-text")
-              .text((d) => d.value)
+              .text((d) => formatValue(d.value))
               .attr("x", 0)
               .attr("y", 0)
               .attr("dx", d => d.width / 2)
