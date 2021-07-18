@@ -63,7 +63,7 @@
   },
   {
     "id": 1,
-    "kind": "i",
+    "kind": "f",
     "ndim": 1,
     "shape": [
       4
@@ -74,37 +74,37 @@
         "index": [
           0
         ],
-        "value": -6917529027641081856,
+        "value": 0.0,
         "sources": [
           "0_0"
         ]
       },
       {
-        "id": "1_8",
+        "id": "1_4",
         "index": [
           1
         ],
-        "value": -6917529027641081856,
+        "value": 0.0,
         "sources": [
           "0_8"
         ]
       },
       {
-        "id": "1_16",
+        "id": "1_8",
         "index": [
           2
         ],
-        "value": 4445241346,
+        "value": 1.1210387714598537e-44,
         "sources": [
           "0_16"
         ]
       },
       {
-        "id": "1_24",
+        "id": "1_12",
         "index": [
           3
         ],
-        "value": 703253650079745,
+        "value": 0.0,
         "sources": [
           "0_24"
         ]
@@ -114,10 +114,10 @@
 ];
         const lines = [
   "a = xp.asarray([5, 2, 4, 1])",
-  "b = xp.empty_like(a)"
+  "b = xp.empty_like(a, dtype=xp.float32)"
 ];
 
-        op_art.visualize("#plot", arrs, lines, 1500, true, "TB");
+        op_art.visualize("#plot", arrs, lines, 1500, true, "TB", true);
       });
     </script>
   </body>

@@ -70,7 +70,7 @@ def empty_example():
 
 def empty_like_example():
     a = xp.asarray([5, 2, 4, 1])
-    b = xp.empty_like(a)
+    b = xp.empty_like(a, dtype=xp.float32)
     return a, b
 
 def eye_example():
