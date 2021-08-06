@@ -279,9 +279,9 @@ define("op_art", ["d3"], function (d3) {
       const ind2 = [ndarr.shape[0]];
       g.append("line")
         .attr("class", "dimension-line")
-        .attr("x1", x(indexToX(ind1)) + xOffset)
+        .attr("x1", x(indexToX(ind1) + 0.1) + xOffset)
         .attr("y1", y(indexToY(ind1, ndarr.shape) + 1) + yOffset)
-        .attr("x2", x(indexToX(ind2) - 0.1) + xOffset)
+        .attr("x2", x(indexToX(ind2)) + xOffset)
         .attr("y2", y(indexToY(ind2, ndarr.shape) + 1) + yOffset);
     } else if (ndarr.ndim == 2) {
       const ind1 = [0, 0];
@@ -289,15 +289,15 @@ define("op_art", ["d3"], function (d3) {
       const ind3 = [ndarr.shape[0], ndarr.shape[1]];
       g.append("line")
         .attr("class", "dimension-line")
-        .attr("x1", x(indexToX(ind1) - 0.1) + xOffset)
+        .attr("x1", x(indexToX(ind1)) + xOffset)
         .attr("y1", y(indexToY(ind1, ndarr.shape)) + yOffset)
-        .attr("x2", x(indexToX(ind2) - 0.1) + xOffset)
+        .attr("x2", x(indexToX(ind2)) + xOffset)
         .attr("y2", y(indexToY(ind2, ndarr.shape)) + yOffset);
       g.append("line")
         .attr("class", "dimension-line")
-        .attr("x1", x(indexToX(ind2) - 0.1) + xOffset)
+        .attr("x1", x(indexToX(ind2)) + xOffset)
         .attr("y1", y(indexToY(ind2, ndarr.shape)) + yOffset)
-        .attr("x2", x(indexToX(ind3) - 0.1) + xOffset)
+        .attr("x2", x(indexToX(ind3)) + xOffset)
         .attr("y2", y(indexToY(ind3, ndarr.shape)) + yOffset);
     } else if (ndarr.ndim == 3) {
       const ind1 = [ndarr.shape[0], 0, 0];
@@ -306,21 +306,21 @@ define("op_art", ["d3"], function (d3) {
       const ind4 = [0, ndarr.shape[1], ndarr.shape[2]];
       g.append("line")
         .attr("class", "dimension-line")
-        .attr("x1", x(indexToX(ind1) - 0.1) + xOffset)
+        .attr("x1", x(indexToX(ind1)) + xOffset)
         .attr("y1", y(indexToY(ind1, ndarr.shape)) + yOffset)
-        .attr("x2", x(indexToX(ind2) - 0.1) + xOffset)
+        .attr("x2", x(indexToX(ind2)) + xOffset)
         .attr("y2", y(indexToY(ind2, ndarr.shape)) + yOffset);
       g.append("line")
         .attr("class", "dimension-line")
-        .attr("x1", x(indexToX(ind2) - 0.1) + xOffset)
+        .attr("x1", x(indexToX(ind2)) + xOffset)
         .attr("y1", y(indexToY(ind2, ndarr.shape)) + yOffset)
-        .attr("x2", x(indexToX(ind3) - 0.1) + xOffset)
+        .attr("x2", x(indexToX(ind3)) + xOffset)
         .attr("y2", y(indexToY(ind3, ndarr.shape)) + yOffset);
       g.append("line")
         .attr("class", "dimension-line")
-        .attr("x1", x(indexToX(ind3) - 0.1) + xOffset)
+        .attr("x1", x(indexToX(ind3)) + xOffset)
         .attr("y1", y(indexToY(ind3, ndarr.shape)) + yOffset)
-        .attr("x2", x(indexToX(ind4) - 0.1) + xOffset)
+        .attr("x2", x(indexToX(ind4)) + xOffset)
         .attr("y2", y(indexToY(ind4, ndarr.shape)) + yOffset);
     }
 
@@ -486,7 +486,7 @@ define("op_art", ["d3"], function (d3) {
       const o = reprs[i];
       for (const cell of arrayElements(o)) {
         if (o.cells) { // array-api
-          cell.x = indexToX(cell.index) * cellWidth + xOffset;
+          cell.x = (indexToX(cell.index) + 0.1) * cellWidth + xOffset;
           cell.y = indexToY(cell.index, o.shape) * cellHeight + yOffset;
           cell.width = cellWidth * 0.9;
           cell.height = cellHeight * 0.9;
