@@ -1,0 +1,584 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>op-art</title>
+    <script src="../require.js"></script>
+    <link href="../op_art.css" rel="stylesheet" />
+  </head>
+
+  <body>
+    <div id="plot"></div>
+
+    <script>
+      require.config({
+        baseUrl: "..",
+        paths: {
+          d3: 'https://d3js.org/d3.v5.min'
+        }
+      });
+      require(["op_art"], function(op_art) {
+        const arrs = [
+  {
+    "id": 1,
+    "kind": "i",
+    "ndim": 3,
+    "shape": [
+      4,
+      3,
+      2
+    ],
+    "cells": [
+      {
+        "id": "1_0",
+        "index": [
+          0,
+          0,
+          0
+        ],
+        "value": 0,
+        "sources": null
+      },
+      {
+        "id": "1_8",
+        "index": [
+          0,
+          0,
+          1
+        ],
+        "value": 1,
+        "sources": null
+      },
+      {
+        "id": "1_16",
+        "index": [
+          0,
+          1,
+          0
+        ],
+        "value": 2,
+        "sources": null
+      },
+      {
+        "id": "1_24",
+        "index": [
+          0,
+          1,
+          1
+        ],
+        "value": 3,
+        "sources": null
+      },
+      {
+        "id": "1_32",
+        "index": [
+          0,
+          2,
+          0
+        ],
+        "value": 4,
+        "sources": null
+      },
+      {
+        "id": "1_40",
+        "index": [
+          0,
+          2,
+          1
+        ],
+        "value": 5,
+        "sources": null
+      },
+      {
+        "id": "1_48",
+        "index": [
+          1,
+          0,
+          0
+        ],
+        "value": 6,
+        "sources": null
+      },
+      {
+        "id": "1_56",
+        "index": [
+          1,
+          0,
+          1
+        ],
+        "value": 7,
+        "sources": null
+      },
+      {
+        "id": "1_64",
+        "index": [
+          1,
+          1,
+          0
+        ],
+        "value": 8,
+        "sources": null
+      },
+      {
+        "id": "1_72",
+        "index": [
+          1,
+          1,
+          1
+        ],
+        "value": 9,
+        "sources": null
+      },
+      {
+        "id": "1_80",
+        "index": [
+          1,
+          2,
+          0
+        ],
+        "value": 10,
+        "sources": null
+      },
+      {
+        "id": "1_88",
+        "index": [
+          1,
+          2,
+          1
+        ],
+        "value": 11,
+        "sources": null
+      },
+      {
+        "id": "1_96",
+        "index": [
+          2,
+          0,
+          0
+        ],
+        "value": 12,
+        "sources": null
+      },
+      {
+        "id": "1_104",
+        "index": [
+          2,
+          0,
+          1
+        ],
+        "value": 13,
+        "sources": null
+      },
+      {
+        "id": "1_112",
+        "index": [
+          2,
+          1,
+          0
+        ],
+        "value": 14,
+        "sources": null
+      },
+      {
+        "id": "1_120",
+        "index": [
+          2,
+          1,
+          1
+        ],
+        "value": 15,
+        "sources": null
+      },
+      {
+        "id": "1_128",
+        "index": [
+          2,
+          2,
+          0
+        ],
+        "value": 16,
+        "sources": null
+      },
+      {
+        "id": "1_136",
+        "index": [
+          2,
+          2,
+          1
+        ],
+        "value": 17,
+        "sources": null
+      },
+      {
+        "id": "1_144",
+        "index": [
+          3,
+          0,
+          0
+        ],
+        "value": 18,
+        "sources": null
+      },
+      {
+        "id": "1_152",
+        "index": [
+          3,
+          0,
+          1
+        ],
+        "value": 19,
+        "sources": null
+      },
+      {
+        "id": "1_160",
+        "index": [
+          3,
+          1,
+          0
+        ],
+        "value": 20,
+        "sources": null
+      },
+      {
+        "id": "1_168",
+        "index": [
+          3,
+          1,
+          1
+        ],
+        "value": 21,
+        "sources": null
+      },
+      {
+        "id": "1_176",
+        "index": [
+          3,
+          2,
+          0
+        ],
+        "value": 22,
+        "sources": null
+      },
+      {
+        "id": "1_184",
+        "index": [
+          3,
+          2,
+          1
+        ],
+        "value": 23,
+        "sources": null
+      }
+    ]
+  },
+  {
+    "id": 2,
+    "kind": "i",
+    "ndim": 3,
+    "shape": [
+      4,
+      2,
+      3
+    ],
+    "cells": [
+      {
+        "id": "2_0",
+        "index": [
+          0,
+          0,
+          0
+        ],
+        "value": 0,
+        "sources": [
+          "1_0"
+        ]
+      },
+      {
+        "id": "2_8",
+        "index": [
+          0,
+          1,
+          0
+        ],
+        "value": 1,
+        "sources": [
+          "1_8"
+        ]
+      },
+      {
+        "id": "2_16",
+        "index": [
+          0,
+          0,
+          1
+        ],
+        "value": 2,
+        "sources": [
+          "1_16"
+        ]
+      },
+      {
+        "id": "2_24",
+        "index": [
+          0,
+          1,
+          1
+        ],
+        "value": 3,
+        "sources": [
+          "1_24"
+        ]
+      },
+      {
+        "id": "2_32",
+        "index": [
+          0,
+          0,
+          2
+        ],
+        "value": 4,
+        "sources": [
+          "1_32"
+        ]
+      },
+      {
+        "id": "2_40",
+        "index": [
+          0,
+          1,
+          2
+        ],
+        "value": 5,
+        "sources": [
+          "1_40"
+        ]
+      },
+      {
+        "id": "2_48",
+        "index": [
+          1,
+          0,
+          0
+        ],
+        "value": 6,
+        "sources": [
+          "1_48"
+        ]
+      },
+      {
+        "id": "2_56",
+        "index": [
+          1,
+          1,
+          0
+        ],
+        "value": 7,
+        "sources": [
+          "1_56"
+        ]
+      },
+      {
+        "id": "2_64",
+        "index": [
+          1,
+          0,
+          1
+        ],
+        "value": 8,
+        "sources": [
+          "1_64"
+        ]
+      },
+      {
+        "id": "2_72",
+        "index": [
+          1,
+          1,
+          1
+        ],
+        "value": 9,
+        "sources": [
+          "1_72"
+        ]
+      },
+      {
+        "id": "2_80",
+        "index": [
+          1,
+          0,
+          2
+        ],
+        "value": 10,
+        "sources": [
+          "1_80"
+        ]
+      },
+      {
+        "id": "2_88",
+        "index": [
+          1,
+          1,
+          2
+        ],
+        "value": 11,
+        "sources": [
+          "1_88"
+        ]
+      },
+      {
+        "id": "2_96",
+        "index": [
+          2,
+          0,
+          0
+        ],
+        "value": 12,
+        "sources": [
+          "1_96"
+        ]
+      },
+      {
+        "id": "2_104",
+        "index": [
+          2,
+          1,
+          0
+        ],
+        "value": 13,
+        "sources": [
+          "1_104"
+        ]
+      },
+      {
+        "id": "2_112",
+        "index": [
+          2,
+          0,
+          1
+        ],
+        "value": 14,
+        "sources": [
+          "1_112"
+        ]
+      },
+      {
+        "id": "2_120",
+        "index": [
+          2,
+          1,
+          1
+        ],
+        "value": 15,
+        "sources": [
+          "1_120"
+        ]
+      },
+      {
+        "id": "2_128",
+        "index": [
+          2,
+          0,
+          2
+        ],
+        "value": 16,
+        "sources": [
+          "1_128"
+        ]
+      },
+      {
+        "id": "2_136",
+        "index": [
+          2,
+          1,
+          2
+        ],
+        "value": 17,
+        "sources": [
+          "1_136"
+        ]
+      },
+      {
+        "id": "2_144",
+        "index": [
+          3,
+          0,
+          0
+        ],
+        "value": 18,
+        "sources": [
+          "1_144"
+        ]
+      },
+      {
+        "id": "2_152",
+        "index": [
+          3,
+          1,
+          0
+        ],
+        "value": 19,
+        "sources": [
+          "1_152"
+        ]
+      },
+      {
+        "id": "2_160",
+        "index": [
+          3,
+          0,
+          1
+        ],
+        "value": 20,
+        "sources": [
+          "1_160"
+        ]
+      },
+      {
+        "id": "2_168",
+        "index": [
+          3,
+          1,
+          1
+        ],
+        "value": 21,
+        "sources": [
+          "1_168"
+        ]
+      },
+      {
+        "id": "2_176",
+        "index": [
+          3,
+          0,
+          2
+        ],
+        "value": 22,
+        "sources": [
+          "1_176"
+        ]
+      },
+      {
+        "id": "2_184",
+        "index": [
+          3,
+          1,
+          2
+        ],
+        "value": 23,
+        "sources": [
+          "1_184"
+        ]
+      }
+    ]
+  }
+];
+        const lines = [
+  "a = xp.reshape(xp.arange(24), (4, 3, 2))",
+  "b = a.mT"
+];
+
+        op_art.visualize("#plot", arrs, lines, 1500, true, "TB", true);
+      });
+    </script>
+  </body>
+</html>

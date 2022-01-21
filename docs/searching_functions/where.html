@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>op-art</title>
+    <script src="../require.js"></script>
+    <link href="../op_art.css" rel="stylesheet" />
+  </head>
+
+  <body>
+    <div id="plot"></div>
+
+    <script>
+      require.config({
+        baseUrl: "..",
+        paths: {
+          d3: 'https://d3js.org/d3.v5.min'
+        }
+      });
+      require(["op_art"], function(op_art) {
+        const arrs = [
+  {
+    "id": 0,
+    "kind": "b",
+    "ndim": 1,
+    "shape": [
+      4
+    ],
+    "cells": [
+      {
+        "id": "0_0",
+        "index": [
+          0
+        ],
+        "value": true,
+        "sources": null
+      },
+      {
+        "id": "0_1",
+        "index": [
+          1
+        ],
+        "value": false,
+        "sources": null
+      },
+      {
+        "id": "0_2",
+        "index": [
+          2
+        ],
+        "value": true,
+        "sources": null
+      },
+      {
+        "id": "0_3",
+        "index": [
+          3
+        ],
+        "value": true,
+        "sources": null
+      }
+    ]
+  },
+  {
+    "id": 1,
+    "kind": "i",
+    "ndim": 1,
+    "shape": [
+      4
+    ],
+    "cells": [
+      {
+        "id": "1_0",
+        "index": [
+          0
+        ],
+        "value": 1,
+        "sources": null
+      },
+      {
+        "id": "1_8",
+        "index": [
+          1
+        ],
+        "value": 2,
+        "sources": null
+      },
+      {
+        "id": "1_16",
+        "index": [
+          2
+        ],
+        "value": 3,
+        "sources": null
+      },
+      {
+        "id": "1_24",
+        "index": [
+          3
+        ],
+        "value": 4,
+        "sources": null
+      }
+    ]
+  },
+  {
+    "id": 2,
+    "kind": "i",
+    "ndim": 1,
+    "shape": [
+      4
+    ],
+    "cells": [
+      {
+        "id": "2_0",
+        "index": [
+          0
+        ],
+        "value": 9,
+        "sources": null
+      },
+      {
+        "id": "2_8",
+        "index": [
+          1
+        ],
+        "value": 8,
+        "sources": null
+      },
+      {
+        "id": "2_16",
+        "index": [
+          2
+        ],
+        "value": 7,
+        "sources": null
+      },
+      {
+        "id": "2_24",
+        "index": [
+          3
+        ],
+        "value": 6,
+        "sources": null
+      }
+    ]
+  },
+  {
+    "id": 3,
+    "kind": "i",
+    "ndim": 1,
+    "shape": [
+      4
+    ],
+    "cells": [
+      {
+        "id": "3_0",
+        "index": [
+          0
+        ],
+        "value": 1,
+        "sources": [
+          "0_0",
+          "1_0"
+        ]
+      },
+      {
+        "id": "3_8",
+        "index": [
+          1
+        ],
+        "value": 8,
+        "sources": [
+          "0_1",
+          "2_8"
+        ]
+      },
+      {
+        "id": "3_16",
+        "index": [
+          2
+        ],
+        "value": 3,
+        "sources": [
+          "0_2",
+          "1_16"
+        ]
+      },
+      {
+        "id": "3_24",
+        "index": [
+          3
+        ],
+        "value": 4,
+        "sources": [
+          "0_3",
+          "1_24"
+        ]
+      }
+    ]
+  }
+];
+        const lines = [
+  "a = xp.asarray([True, False, True, True])",
+  "b = xp.asarray([1, 2, 3, 4])",
+  "c = xp.asarray([9, 8, 7, 6])",
+  "d = xp.where(a, b, c)"
+];
+
+        op_art.visualize("#plot", arrs, lines, 1500, true, "TB", true);
+      });
+    </script>
+  </body>
+</html>

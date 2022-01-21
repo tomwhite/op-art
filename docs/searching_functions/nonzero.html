@@ -22,57 +22,91 @@
   {
     "id": 0,
     "kind": "i",
-    "ndim": 1,
+    "ndim": 2,
     "shape": [
-      6
+      3,
+      3
     ],
     "cells": [
       {
         "id": "0_0",
         "index": [
+          0,
           0
-        ],
-        "value": 2,
-        "sources": null
-      },
-      {
-        "id": "0_8",
-        "index": [
-          1
-        ],
-        "value": 2,
-        "sources": null
-      },
-      {
-        "id": "0_16",
-        "index": [
-          2
         ],
         "value": 3,
         "sources": null
       },
       {
+        "id": "0_8",
+        "index": [
+          0,
+          1
+        ],
+        "value": 0,
+        "sources": null
+      },
+      {
+        "id": "0_16",
+        "index": [
+          0,
+          2
+        ],
+        "value": 0,
+        "sources": null
+      },
+      {
         "id": "0_24",
         "index": [
-          3
+          1,
+          0
         ],
-        "value": 5,
+        "value": 0,
         "sources": null
       },
       {
         "id": "0_32",
         "index": [
-          4
+          1,
+          1
         ],
-        "value": 1,
+        "value": 4,
         "sources": null
       },
       {
         "id": "0_40",
         "index": [
-          5
+          1,
+          2
         ],
-        "value": 1,
+        "value": 0,
+        "sources": null
+      },
+      {
+        "id": "0_48",
+        "index": [
+          2,
+          0
+        ],
+        "value": 5,
+        "sources": null
+      },
+      {
+        "id": "0_56",
+        "index": [
+          2,
+          1
+        ],
+        "value": 6,
+        "sources": null
+      },
+      {
+        "id": "0_64",
+        "index": [
+          2,
+          2
+        ],
+        "value": 0,
         "sources": null
       }
     ]
@@ -90,17 +124,7 @@
         "index": [
           0
         ],
-        "value": 1,
-        "sources": [
-          "0_32"
-        ]
-      },
-      {
-        "id": "1_8",
-        "index": [
-          1
-        ],
-        "value": 2,
+        "value": 0,
         "sources": [
           "0_0"
         ]
@@ -108,29 +132,89 @@
       {
         "id": "1_16",
         "index": [
-          2
+          1
         ],
-        "value": 3,
+        "value": 1,
         "sources": [
-          "0_16"
+          "0_32"
         ]
       },
       {
-        "id": "1_24",
+        "id": "1_32",
+        "index": [
+          2
+        ],
+        "value": 2,
+        "sources": [
+          "0_48"
+        ]
+      },
+      {
+        "id": "1_48",
         "index": [
           3
         ],
-        "value": 5,
+        "value": 2,
         "sources": [
-          "0_24"
+          "0_56"
+        ]
+      }
+    ]
+  },
+  {
+    "id": 2,
+    "kind": "i",
+    "ndim": 1,
+    "shape": [
+      4
+    ],
+    "cells": [
+      {
+        "id": "2_0",
+        "index": [
+          0
+        ],
+        "value": 0,
+        "sources": [
+          "0_0"
+        ]
+      },
+      {
+        "id": "2_16",
+        "index": [
+          1
+        ],
+        "value": 1,
+        "sources": [
+          "0_32"
+        ]
+      },
+      {
+        "id": "2_32",
+        "index": [
+          2
+        ],
+        "value": 0,
+        "sources": [
+          "0_48"
+        ]
+      },
+      {
+        "id": "2_48",
+        "index": [
+          3
+        ],
+        "value": 1,
+        "sources": [
+          "0_56"
         ]
       }
     ]
   }
 ];
         const lines = [
-  "a = xp.asarray([2, 2, 3, 5, 1, 1])",
-  "b = xp.unique(a)"
+  "a = xp.asarray([[3, 0, 0], [0, 4, 0], [5, 6, 0]])",
+  "b, c = xp.nonzero(a)"
 ];
 
         op_art.visualize("#plot", arrs, lines, 1500, true, "TB", true);

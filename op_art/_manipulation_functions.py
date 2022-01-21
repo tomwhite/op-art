@@ -7,10 +7,15 @@
 import numpy as np
 
 from ._array_object import _direct_mapping
+from ._linear_algebra_functions import einsum
 
 def concat(arrays, /, *, axis=0):
     # call np version for error cases 
     arr = np.concatenate([a.arr for a in arrays], axis=axis)
+
+    # For axis=None flatten arrays first
+    if axis is None:
+        raise NotImplementedError("concat not implemented for axis=None")
 
     import op_art as xp
     ndim = len(arrays[0].shape)
@@ -31,6 +36,11 @@ def flip(x, /, *, axis=None):
     # we can just delegate to numpy, since it implements flip using indexing
     # see notes at https://numpy.org/doc/stable/reference/generated/numpy.flip.html
     return np.flip(x, axis)
+
+def permute_dims(x, /, axes):
+    x_indexes = list(range(x.ndim))
+    output_indexes = list(axes)
+    return einsum(x, x_indexes, output_indexes)
 
 def reshape(x, /, shape):
     arr = np.reshape(x.arr, shape)

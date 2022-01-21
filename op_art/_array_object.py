@@ -35,11 +35,16 @@ class Array:
   
     @property
     def device(self):
-        raise NotImplementedError("The device attribute is not yet implemented")
+        return "cpu"
 
     @property
     def dtype(self):
         return self.arr.dtype
+
+    @property
+    def mT(self):
+        from ._linear_algebra_functions import matrix_transpose
+        return matrix_transpose(self)
 
     @property
     def ndim(self):
@@ -55,9 +60,18 @@ class Array:
 
     @property
     def T(self):
+        if self.ndim != 2:
+            raise ValueError("x.T requires x to have 2 dimensions. Use x.mT to transpose stacks of matrices and permute_dims() to permute dimensions.")
         arr = self.arr.T
         # transpose doesn't change the underlying array
         return _direct_mapping(self, arr)
+
+    def to_device(self, device, /, stream=None):
+        if stream is not None:
+            raise ValueError("The stream argument to to_device() is not supported")
+        if device == "cpu":
+            return self
+        raise ValueError(f"Unsupported device {device!r}")
 
     # Based on https://github.com/data-apis/numpy/blob/array-api/numpy/_array_api/_array_object.py
     # Helper function to match the type promotion rules in the spec
@@ -77,6 +91,13 @@ class Array:
         return Array(np.array(scalar, self.dtype))
 
     def __getitem__(self, item):
+        # optimize case of single integer index
+        if isinstance(item, tuple) and all([isinstance(i, int) for i in item]):
+            indexed_arr = np.asarray(self.arr[item])
+            rep = Array._get_representation(indexed_arr)
+            rep.cells[0].sources = [self.representation[item]]
+            return Array.from_representation(indexed_arr, rep)
+
         if isinstance(item, Array): # boolean array
             item = item.arr
             args = np.argwhere(item)
@@ -158,7 +179,7 @@ class Array:
         return _elementwise_binary_operation(self, other, np.logical_and)
 
     def __array_namespace__(self, /, *, api_version=None):
-        if api_version is not None:
+        if api_version is not None and not api_version.startswith("2021."):
             raise ValueError("Unrecognized array API version")
         import op_art
         return op_art
@@ -168,8 +189,11 @@ class Array:
             raise TypeError("bool is only allowed on arrays with shape ()")
         return self.arr.__bool__()
 
-    # TODO: __dlpack__
-    # TODO: __dlpack_device__
+    def __dlpack__(self, /, *, stream=None):
+        return self.arr.__dlpack__(stream=stream)
+
+    def __dlpack_device__(self, /):
+        return self.arr.__dlpack_device__()
 
     def __eq__(self, other, /):
         if isinstance(other, (int, float, bool)):
@@ -202,6 +226,9 @@ class Array:
             raise TypeError("int is only allowed on arrays with shape ()")
         return self.arr.__int__()
 
+    def __index__(self, /):
+        return self.arr.__index__()
+
     def __invert__(self, /):
         return _elementwise_unary_operation(self, np.invert)
 
@@ -209,8 +236,6 @@ class Array:
         if isinstance(other, (int, float, bool)):
             other = self._promote_scalar(other)
         return _elementwise_binary_operation(self, other, np.less_equal)
-
-    # TODO: __len__
 
     def __lshift__(self, other, /):
         if isinstance(other, (int, float, bool)):
@@ -308,7 +333,12 @@ class Array:
         return _elementwise_binary_operation(other, self, np.left_shift)
 
     # TODO: __imatmul__
-    # TODO: __rmatmul__
+
+    def __rmatmul__(self, other, /):
+        if isinstance(other, (int, float, bool)):
+            other = self._promote_scalar(other)
+        import op_art
+        return op_art.matmul(other, self)
 
     # TODO: __imod__
 
@@ -369,13 +399,15 @@ class Array:
     @staticmethod
     def _get_representation(arr, arr_id=None):
         """Convert array into a representation suitable for visualization"""
-        if arr.ndim >= 4:
-            raise NotImplementedError("Arrays of dimension 4 or more are not supported.")
+
+        # TODO: this should be checked in the visualization code, not the representation
+        # if arr.ndim >= 4:
+        #     raise NotImplementedError("Arrays of dimension 4 or more are not supported.")
 
         if arr_id is None:
             arr_id = next(id_gen)
         cells = []
-        it = np.nditer(arr, flags=["multi_index", "zerosize_ok"])
+        it = np.nditer(arr, flags=["multi_index", "refs_ok", "zerosize_ok"])
         for x in it:
             offset = builtins.sum((np.array(it.multi_index) * arr.strides).tolist())  # tolist to convert to python int
             cell_id = f"{arr_id}_{offset}"
@@ -412,13 +444,19 @@ class CellRepresentation:
     sources: Any = None
 
 
-@dataclass(frozen=True)
+@dataclass(frozen=False)
 class ArrayRepresentation:
     id: int
     kind: str
     ndim: int
     shape: Any
     cells: Tuple[CellRepresentation]
+
+    # allow cells to be looked up by index
+    def __getitem__(self, item):
+        if not hasattr(self, "cell_index"):
+            self.cell_index = {cell.index: cell for cell in self.cells}
+        return self.cell_index[item]
 
 
 def _rewrite_sources(source_ids, visible_ids, cell_id_to_sources):
@@ -647,8 +685,8 @@ def _elementwise_binary_operation(x1, x2, array_op):
     rep = ArrayRepresentation(new_rep.id, arr.dtype.kind, arr.ndim, arr.shape, tuple(cells))
     return Array.from_representation(arr, rep)
 
-def _reduction_operation(x, axis, array_op, py_op=None, fill_value=0):
-    arr = array_op(x.arr, axis)
+def _reduction_operation(x, axis, array_op, py_op=None, fill_value=0, **kwargs):
+    arr = array_op(x.arr, axis, **kwargs)
     y = np.full_like(arr, fill_value)
 
     # create a mapping of (output) index to cell, so we can update the sources for each cell

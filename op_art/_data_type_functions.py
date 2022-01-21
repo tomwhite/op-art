@@ -2,8 +2,14 @@
 # https://data-apis.org/array-api/latest/API_specification/data_type_functions.html
 
 import numpy as np
+from numpy import array_api as nxp
 
-from ._array_object import Array, _broadcast_to
+from ._array_object import Array, _broadcast_to, _direct_mapping
+
+def astype(x, dtype, /, *, copy=True):
+    if not copy and dtype == x.dtype:
+        return x
+    return _direct_mapping(x, x.arr.astype(dtype=dtype, copy=copy))
 
 def broadcast_arrays(*arrays):
     # based on the numpy implementation
@@ -23,10 +29,13 @@ def can_cast(from_, to, /):
     return np.can_cast(from_, to)
 
 def finfo(type, /):
-    return np.finfo(type)
+    # Use numpy.array_api since there is nothing op_art specific
+    return nxp.finfo(type)
 
 def iinfo(type, /):
-    return np.iinfo(type)
+    # Use numpy.array_api since there is nothing op_art specific
+    return nxp.iinfo(type)
 
 def result_type(*arrays_and_dtypes):
-    return np.result_type(*(a.arr if isinstance(a, Array) else a for a in arrays_and_dtypes))
+    # Use numpy.array_api since there is nothing op_art specific
+    return nxp.result_type(*(a.dtype if isinstance(a, Array) else a for a in arrays_and_dtypes))

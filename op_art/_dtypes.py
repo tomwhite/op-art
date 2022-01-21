@@ -1,21 +1,23 @@
-import numpy as np
-
-int8 = np.dtype('int8')
-int16 = np.dtype('int16')
-int32 = np.dtype('int32')
-int64 = np.dtype('int64')
-uint8 = np.dtype('uint8')
-uint16 = np.dtype('uint16')
-uint32 = np.dtype('uint32')
-uint64 = np.dtype('uint64')
-float32 = np.dtype('float32')
-float64 = np.dtype('float64')
-bool = np.dtype('bool')
-
-_all_dtypes = [int8, int16, int32, int64, uint8, uint16, uint32, uint64,
-               float32, float64, bool]
-_boolean_dtypes = [bool]
-_floating_dtypes = [float32, float64]
-_integer_dtypes = [int8, int16, int32, int64, uint8, uint16, uint32, uint64]
-_integer_or_boolean_dtypes = [bool, int8, int16, int32, int64, uint8, uint16, uint32, uint64]
-_numeric_dtypes = [float32, float64, int8, int16, int32, int64, uint8, uint16, uint32, uint64]
+# Use type code from numpy.array_api
+from numpy.array_api._dtypes import (
+    int8,
+    int16,
+    int32,
+    int64,
+    uint8,
+    uint16,
+    uint32,
+    uint64,
+    float32,
+    float64,
+    bool,
+    _all_dtypes,
+    _boolean_dtypes,
+    _floating_dtypes,
+    _integer_dtypes,
+    _integer_or_boolean_dtypes,
+    _numeric_dtypes,
+    _dtype_categories,
+    _promotion_table,
+    _result_type
+)

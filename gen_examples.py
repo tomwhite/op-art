@@ -5,12 +5,17 @@ import op_art as xp
 
 # Array object
 
+def mT_example():
+    a = xp.reshape(xp.arange(24), (4, 3, 2))
+    b = a.mT
+    return a, b
+
 def T_example():
     a = xp.reshape(xp.arange(6), (3, 2))
     b = a.T
     return a, b
 
-array_object = [T_example]
+array_object = [mT_example, T_example]
 
 # Indexing
 
@@ -90,6 +95,12 @@ def linspace_example():
     a = xp.linspace(2.0, 3.0, num=5)
     return (a,)
 
+def meshgrid_example():
+    a = xp.asarray([1, 2, 3, 4])
+    b = xp.asarray([5, 6, 7])
+    c, d = xp.meshgrid(a, b)
+    return a, b, c, d
+
 def ones_example():
     a = xp.ones((1, 2))
     return (a,)
@@ -97,6 +108,16 @@ def ones_example():
 def ones_like_example():
     a = xp.asarray([5, 2, 4, 1])
     b = xp.ones_like(a)
+    return a, b
+
+def tril_example():
+    a = xp.asarray([[1, 2, 3], [4, 5, 6], [7, 8, 9]])
+    b = xp.tril(a)
+    return a, b
+
+def triu_example():
+    a = xp.asarray([[1, 2, 3], [4, 5, 6], [7, 8, 9]])
+    b = xp.triu(a)
     return a, b
 
 def zeros_example():
@@ -108,7 +129,7 @@ def zeros_like_example():
     b = xp.zeros_like(a)
     return a, b
 
-creation_functions = [arange_example, asarray_example, empty_example, empty_like_example, eye_example, full_example, full_like_example, linspace_example, ones_example, ones_like_example, zeros_example, zeros_like_example]
+creation_functions = [arange_example, asarray_example, empty_example, empty_like_example, eye_example, full_example, full_like_example, linspace_example, meshgrid_example, ones_example, ones_like_example, tril_example, triu_example, zeros_example, zeros_like_example]
 
 # Manipulation Functions
 
@@ -126,6 +147,11 @@ def expand_dims_example():
 def flip_example():
     a = xp.reshape(xp.arange(6), (3, 2))
     b = xp.flip(a, axis=0)
+    return a, b
+
+def permute_dims_example():
+    a = xp.reshape(xp.arange(24), (4, 3, 2))
+    b = xp.permute_dims(a, (1, 0, 2))
     return a, b
 
 def reshape_example():
@@ -149,7 +175,7 @@ def stack_example():
     c = xp.stack((a, b))
     return a, b, c
 
-manipulation_functions = [concat_example, expand_dims_example, flip_example, reshape_example, roll_example, squeeze_example, stack_example]
+manipulation_functions = [concat_example, expand_dims_example, flip_example, permute_dims_example, reshape_example, roll_example, squeeze_example, stack_example]
 
 # Element-wise Functions
 
@@ -231,12 +257,19 @@ def tensordot_example():
     c = xp.tensordot(a, b)
     return a, b, c
 
-def transpose_example():
-    a = xp.reshape(xp.arange(6), (3, 2))
-    b = xp.transpose(a)
+def matrix_transpose_example():
+    a = xp.reshape(xp.arange(24), (4, 3, 2))
+    b = xp.matrix_transpose(a)
     return a, b
 
-linear_algebra_functions = [einsum_example, matmul_example, tensordot_example, transpose_example]
+def vecdot_example():
+    a = xp.arange(6)
+    b = xp.arange(6)
+    c = xp.vecdot(a, b)
+    return a, b, c
+
+
+linear_algebra_functions = [einsum_example, matmul_example, tensordot_example, matrix_transpose_example, vecdot_example]
 
 # Searching Functions
 
@@ -250,7 +283,19 @@ def argmin_example():
     b = xp.argmin(a, axis=0)
     return a, b
 
-searching_functions = [argmax_example, argmin_example]
+def nonzero_example():
+    a = xp.asarray([[3, 0, 0], [0, 4, 0], [5, 6, 0]])
+    b, c = xp.nonzero(a)
+    return a, b, c
+
+def where_example():
+    a = xp.asarray([True, False, True, True])
+    b = xp.asarray([1, 2, 3, 4])
+    c = xp.asarray([9, 8, 7, 6])
+    d = xp.where(a, b, c)
+    return a, b, c, d
+
+searching_functions = [argmax_example, argmin_example, nonzero_example, where_example]
 
 # Sorting Functions
 
@@ -268,12 +313,27 @@ sorting_functions = [argsort_example, sort_example]
 
 # Set Functions
 
-def unique_example():
+def unique_all_example():
     a = xp.asarray([2, 2, 3, 5, 1, 1])
-    b = xp.unique(a)
+    b, c, d, e = xp.unique_all(a)
+    return a, b, c, d, e
+
+def unique_counts_example():
+    a = xp.asarray([2, 2, 3, 5, 1, 1])
+    b, c = xp.unique_counts(a)
+    return a, b, c
+
+def unique_inverse_example():
+    a = xp.asarray([2, 2, 3, 5, 1, 1])
+    b, c = xp.unique_inverse(a)
+    return a, b, c
+
+def unique_values_example():
+    a = xp.asarray([2, 2, 3, 5, 1, 1])
+    b = xp.unique_values(a)
     return a, b
 
-set_functions = [unique_example]
+set_functions = [unique_all_example, unique_counts_example, unique_inverse_example, unique_values_example]
 
 # Utility Functions
 

@@ -6,6 +6,7 @@
 import numpy as np
 
 from ._array_object import _elementwise_unary_operation, _elementwise_binary_operation
+from ._dtypes import _integer_dtypes
 
 def abs(x, /):
     return _elementwise_unary_operation(x, np.abs)
@@ -53,6 +54,9 @@ def bitwise_xor(x1, x2, /):
     return _elementwise_binary_operation(x1, x2, np.bitwise_xor)
 
 def ceil(x, /):
+    if x.dtype in _integer_dtypes:
+        # Note: The return dtype of ceil is the same as the input
+        return x
     return _elementwise_unary_operation(x, np.ceil)
 
 def cos(x, /):
@@ -74,6 +78,9 @@ def expm1(x, /):
     return _elementwise_unary_operation(x, np.expm1)
 
 def floor(x, /):
+    if x.dtype in _integer_dtypes:
+        # Note: The return dtype of floor is the same as the input
+        return x
     return _elementwise_unary_operation(x, np.floor)
 
 def floor_divide(x1, x2, /):
@@ -173,4 +180,7 @@ def tanh(x, /):
     return _elementwise_unary_operation(x, np.tanh)
 
 def trunc(x, /):
+    if x.dtype in _integer_dtypes:
+        # Note: The return dtype of trunc is the same as the input
+        return x
     return _elementwise_unary_operation(x, np.trunc)

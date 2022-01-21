@@ -9,7 +9,7 @@ from numpy.compat import basestring
 #from numpy.core.einsumfunc import _parse_einsum_input
 
 from ._array_object import Array, ArrayRepresentation, CellRepresentation
-
+from ._dtypes import _numeric_dtypes
 
 einsum_symbols = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
 einsum_symbols_set = set(einsum_symbols)
@@ -250,7 +250,18 @@ def matmul(x1, x2, /):
 
     return einsum("...ij,...jk->...ik", x1, x2)
 
+def matrix_transpose(x, /):
+    if x.ndim < 2:
+        raise ValueError("x must be at least 2-dimensional for matrix_transpose")
+    return einsum("...ij->...ji", x)
+
 def tensordot(x1, x2, /, *, axes=2):
+    if x1.dtype not in _numeric_dtypes or x2.dtype not in _numeric_dtypes:
+        raise TypeError('Only numeric dtypes are allowed in tensordot')
+    if x1.ndim == 0:
+        return x1
+    elif x2.ndim == 0:
+        return x2
     if isinstance(axes, int):
         axes = (range(-1, -1 - axes, -1), range(axes))
     # inspired by https://scicomp.stackexchange.com/a/34720
@@ -260,10 +271,5 @@ def tensordot(x1, x2, /, *, axes=2):
         x2_indexes[x2_ind] = x1_indexes[x1_ind]
     return einsum(x1, x1_indexes, x2, x2_indexes)
 
-def transpose(x, /, *, axes=None):
-    x_indexes = list(range(x.ndim))
-    if axes is None:
-        output_indexes = list(reversed(range(x.ndim)))
-    else:
-        output_indexes = list(axes)
-    return einsum(x, x_indexes, output_indexes)
+def vecdot(x1, x2, /, *, axis=-1):
+    return tensordot(x1, x2, axes=((axis,), (axis,)))
