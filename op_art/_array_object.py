@@ -26,11 +26,22 @@ def reset_ids():
     id_to_array = {}
 
 class Array:
-    def __init__(self, arr, *, id=None):
+    def __init__(self, arr, *, id=None, src_arr_ids=None, src_offsets=None):
+        if isinstance(arr, np.generic):
+            # Convert the array scalar to a 0-D array
+            arr = np.asarray(arr)
         self.arr = arr
-        self.id = id or next(id_gen)
-        self.representation = Array._get_representation(self.arr, self.id)
+        self.id = id if id is not None else next(id_gen)
+        self.representation = Array._get_representation(self.arr, self.id, src_arr_ids, src_offsets)
         assert self.representation.id == self.id
+        self.arr_ids = np.full_like(arr, self.id, dtype=np.int32)
+        self.offsets = np.empty_like(arr, dtype=np.int32)
+        it = np.nditer(arr, flags=["multi_index", "zerosize_ok"], order="C")
+        for _ in it:
+            offset = index_to_offset(arr, it.multi_index)
+            self.offsets[it.multi_index] = offset
+        self.src_arr_ids = src_arr_ids
+        self.src_offsets = src_offsets
         id_to_array[self.id] = self
   
     @property
@@ -63,8 +74,10 @@ class Array:
         if self.ndim != 2:
             raise ValueError("x.T requires x to have 2 dimensions. Use x.mT to transpose stacks of matrices and permute_dims() to permute dimensions.")
         arr = self.arr.T
-        # transpose doesn't change the underlying array
-        return _direct_mapping(self, arr)
+        src_arr_ids = self.arr_ids.T
+        src_offsets = self.offsets.T
+        return Array(arr, src_arr_ids=src_arr_ids, src_offsets=src_offsets)
+
 
     def to_device(self, device, /, stream=None):
         if stream is not None:
@@ -91,79 +104,39 @@ class Array:
         return Array(np.array(scalar, self.dtype))
 
     def __getitem__(self, item):
-        # optimize case of single integer index
-        if isinstance(item, tuple) and all([isinstance(i, int) for i in item]):
-            indexed_arr = np.asarray(self.arr[item])
-            rep = Array._get_representation(indexed_arr)
-            rep.cells[0].sources = [self.representation[item]]
-            return Array.from_representation(indexed_arr, rep)
-
         if isinstance(item, Array): # boolean array
+            # TODO: this array should be a source too
             item = item.arr
-            args = np.argwhere(item)
-            cell_indexes = [tuple(row) for row in args]
-            # TODO: show item array as a source too
-
-        else:
-            # get indexes for selected cells
-            grid = np.mgrid[tuple(slice(0, n) for n in self.arr.shape)]
-            if not isinstance(item, tuple):
-                item = (item, )
-            s = (slice(0, len(grid)), ) + item
-            grid_s = grid[s]
-            ndim = self.ndim
-            if ndim == 0:
-                cell_indexes = []
-            else:
-                cell_indexes = [tuple(r) for r in grid_s.reshape(ndim, grid_s.size // ndim).T]
-
         indexed_arr = self.arr[item]
-        rep = self.representation
-        indexed_cells = [cell for cell in rep.cells if cell.index in cell_indexes]
-        new_rep = Array._get_representation(indexed_arr)
-        
-        cells = []
-        # this assumes that the indexing linearizes in the same order
-        for cell1, cell2 in zip(indexed_cells, new_rep.cells):
-            assert_equal(cell1.value, cell2.value)
-            cell = CellRepresentation(cell2.id, cell2.index, cell2.value, [cell1.id])
-            cells.append(cell)
-
-        rep = ArrayRepresentation(new_rep.id, indexed_arr.dtype.kind, indexed_arr.ndim, indexed_arr.shape, cells)
-        return Array.from_representation(indexed_arr, rep)
+        indexed_src_arr_ids = self.arr_ids[item]
+        indexed_src_offsets = self.offsets[item]
+        return Array(indexed_arr, src_arr_ids=indexed_src_arr_ids, src_offsets=indexed_src_offsets)
 
     def __setitem__(self, item, value):
-        # TODO: remove duplication from __getitem__
         if isinstance(item, Array): # boolean array
+            # TODO: this array should be a source too
             item = item.arr
-            args = np.argwhere(item)
-            cell_indexes = [tuple(row) for row in args]
-            # TODO: show item array as a source too
-
-        else:
-            # get indexes for selected cells
-            grid = np.mgrid[tuple(slice(0, n) for n in self.arr.shape)]
-            if not isinstance(item, tuple):
-                item = (item, )
-            s = (slice(0, len(grid)), ) + item
-            grid_s = grid[s]
-            ndim = self.ndim
-            if ndim == 0:
-                cell_indexes = []
-            else:
-                cell_indexes = [tuple(r) for r in grid_s.reshape(ndim, grid_s.size // ndim).T]
 
         if isinstance(value, (int, float, bool)):
             value = self._promote_scalar(value)
         self.arr[item] = value.arr
 
-        # this assumes that the indexing linearizes in the same order
-        # TODO: don't mutate the representation - have a graph of representations, and add to it
-        for index, new_cell in zip(cell_indexes, value.representation.cells):
-            for cell in self.representation.cells:
-                if cell.index == index:
-                    cell.value = new_cell.value
-                    cell.sources = [new_cell.id]
+        if self.src_arr_ids is None:
+            self.src_arr_ids = np.full_like(self.arr, -1, dtype=np.int32)
+            self.src_offsets = np.full_like(self.arr, -1, dtype=np.int32)
+
+        if value.arr_ids.shape != self.src_arr_ids[item].shape:
+            # there are more sources in self than value, so expand value arrays to match
+            value_arr_ids = np.full_like(self.src_arr_ids[item], -1, dtype=np.int32)
+            value_offsets = np.full_like(self.src_offsets[item], -1, dtype=np.int32)
+            value_arr_ids[..., 0] = value.arr_ids
+            value_offsets[..., 0] = value.offsets
+            self.src_arr_ids[item] = value_arr_ids
+            self.src_offsets[item] = value_offsets
+        else:
+            self.src_arr_ids[item] = value.arr_ids
+            self.src_offsets[item] = value.offsets
+        self.representation = Array._get_representation(self.arr, self.id, self.src_arr_ids, self.src_offsets)
 
     def __abs__(self, /):
         return _elementwise_unary_operation(self, np.abs)
@@ -397,22 +370,32 @@ class Array:
         return _elementwise_binary_operation(other, self, np.logical_xor)
 
     @staticmethod
-    def _get_representation(arr, arr_id=None):
+    def _get_representation(arr, id, src_arr_ids, src_offsets):
         """Convert array into a representation suitable for visualization"""
-
-        # TODO: this should be checked in the visualization code, not the representation
-        # if arr.ndim >= 4:
-        #     raise NotImplementedError("Arrays of dimension 4 or more are not supported.")
-
-        if arr_id is None:
-            arr_id = next(id_gen)
         cells = []
         it = np.nditer(arr, flags=["multi_index", "refs_ok", "zerosize_ok"])
         for x in it:
             offset = builtins.sum((np.array(it.multi_index) * arr.strides).tolist())  # tolist to convert to python int
-            cell_id = f"{arr_id}_{offset}"
-            cells.append(CellRepresentation(cell_id, it.multi_index, x.item()))
-        return ArrayRepresentation(arr_id, arr.dtype.kind, arr.ndim, arr.shape, tuple(cells))
+            cell_id = f"{id}_{offset}"
+            if src_arr_ids is None:
+                cell_sources = None
+            else:
+                src_arr_id = src_arr_ids[it.multi_index]
+                if np.isscalar(src_arr_id):
+                    if src_arr_id == -1:
+                        cell_sources = None
+                    else:
+                        src_offset = src_offsets[it.multi_index]
+                        cell_sources = [f"{src_arr_id}_{src_offset}"]
+                else:
+                    if np.all(src_arr_id == -1):
+                        cell_sources = None
+                    else:
+                        src_offset = src_offsets[it.multi_index]
+                        cell_sources = [f"{i}_{o}" for i, o in zip(src_arr_id, src_offset) if i != -1]
+            cells.append(CellRepresentation(cell_id, it.multi_index, x.item(), cell_sources))
+        return ArrayRepresentation(id, arr.dtype.kind, arr.ndim, arr.shape, tuple(cells))
+
 
     @staticmethod
     def from_representation(arr, rep):
@@ -425,7 +408,7 @@ class Array:
         return asdict(rewrite_representation(self.representation, visible_ids))
 
     def __repr__(self):
-        return f"Array(id={self.id},\narr={self.arr},\nrepresentation={self.representation})"
+        return f"Array(id={self.id},\narr={self.arr},\nsrc_arr_ids={self.src_arr_ids},\nsrc_offsets={self.src_offsets},\nrepresentation={self.representation})"
 
     def _repr_javascript_(self):
         return """
@@ -578,21 +561,18 @@ def visualize(*arrays, animate=True, rankdir="TB", show_values=True):
 
     return display(Javascript(js))
 
-def _broadcast_to(x, shape, arr_id=None):
+def _broadcast_to(x, shape, id=None):
     arr = np.broadcast_to(x.arr, shape)
+    arr_mat = np.copy(arr, order="C") # "materialize" array so cell ids in result are unique
 
-    # broadcast_to doesn't change the underlying array, so we can just rewrite the id to get the input id
-    new_rep = Array._get_representation(arr, arr_id=arr_id)
-    arr = np.copy(arr) # "materialize" array so cell ids in result are unique
-    new_rep_materialized = Array._get_representation(arr, arr_id=new_rep.id)
-    cells = []
-    for cell, cell_mat in zip(new_rep.cells, new_rep_materialized.cells):
-        input_id = cell.id.replace(f"{new_rep.id}_", f"{x.id}_")
-        cell = CellRepresentation(cell_mat.id, cell.index, cell.value, [input_id])
-        cells.append(cell)
-
-    rep = ArrayRepresentation(new_rep.id, arr.dtype.kind, arr.ndim, arr.shape, tuple(cells))
-    return Array.from_representation(arr, rep)
+    src_arr_ids = np.full_like(arr_mat, x.id, dtype=np.int32)
+    src_offsets = np.full_like(arr_mat, -1, dtype=np.int32)
+    it1 = np.nditer(arr, flags=["multi_index", "zerosize_ok"], order="C")
+    it2 = np.nditer(arr_mat, flags=["multi_index", "zerosize_ok"], order="C")
+    for _, _ in zip(it1, it2):
+        offset = index_to_offset(arr, it1.multi_index)
+        src_offsets[it2.multi_index] = offset
+    return Array(arr_mat, id=id, src_arr_ids=src_arr_ids, src_offsets=src_offsets)
 
 def _broadcast_arrays(*arrays):
     shape = np.broadcast_shapes(*[a.arr.shape for a in arrays])
@@ -602,36 +582,23 @@ def _broadcast_arrays(*arrays):
 
     return [_broadcast_to(array, shape, array.id) for array in arrays]
 
+def _force_broadcast_arrays(*arrays):
+    shape = np.broadcast_shapes(*[a.arr.shape for a in arrays])
+    return [_broadcast_to(array, shape, array.id) for array in arrays]
+
+
 # Covers the case where input and output cells correspond directly by iteration order
 # (C order), even if they don't have corresponding indexes
-def _direct_mapping(input, output):
+def _direct_mapping(input, output, id=None):
     x, arr = input, output
-    x_index_to_cell = {cell.index: cell for cell in x.representation.cells}
-    new_rep = Array._get_representation(arr)
-    cells = []
-    it = np.nditer(x.arr, flags=["multi_index", "zerosize_ok"], order="C")
-    for c, cell in zip(it, new_rep.cells):
-        source_id = x_index_to_cell[it.multi_index].id
-        cell = CellRepresentation(cell.id, cell.index, cell.value, [source_id])
-        cells.append(cell)
-
-    rep = ArrayRepresentation(new_rep.id, arr.dtype.kind, arr.ndim, arr.shape, tuple(cells))
-    return Array.from_representation(arr, rep)
-
-# Covers the case where output cells can be mapped back to input cells
-# using an index.
-# output == input[ind]
-def _index_mapping(input, output, ind):
-    x, arr = input, output
-    new_rep = Array._get_representation(arr)
-    cells = []
-    for index, cell in zip(ind, new_rep.cells):
-        offset = index_to_offset(x.arr, index)
-        cell = CellRepresentation(cell.id, cell.index, cell.value, [f"{x.id}_{offset}"])
-        cells.append(cell)
-
-    rep = ArrayRepresentation(new_rep.id, arr.dtype.kind, arr.ndim, arr.shape, tuple(cells))
-    return Array.from_representation(arr, rep) 
+    src_arr_ids = np.full_like(arr, x.id, dtype=np.int32)
+    src_offsets = np.full_like(arr, -1, dtype=np.int32)
+    it1 = np.nditer(x.arr, flags=["multi_index", "zerosize_ok"], order="C")
+    it2 = np.nditer(arr, flags=["multi_index", "zerosize_ok"], order="C")
+    for _, _ in zip(it1, it2):
+        offset = index_to_offset(x.arr, it1.multi_index)
+        src_offsets[it2.multi_index] = offset
+    return Array(arr, id=id, src_arr_ids=src_arr_ids, src_offsets=src_offsets)
 
 def _elementwise_unary_operation(x, array_op):
     arr = array_op(x.arr)
@@ -666,54 +633,59 @@ def _normalize_two_args(x1, x2):
 def _elementwise_binary_operation(x1, x2, array_op):
     x1, x2 = _normalize_two_args(x1, x2)
     arr = array_op(x1.arr, x2.arr)
-    new_rep = Array._get_representation(arr)
+    arr_id = next(id_gen)
 
-    # broadcast if necessary, and keep track of ids to map
-    x1_broad, x2_broad = _broadcast_arrays(x1, x2)
-    id1_mapping = {cell.id: cell.sources[0] for cell in x1_broad.representation.cells if cell.sources is not None}
-    id2_mapping = {cell.id: cell.sources[0] for cell in x2_broad.representation.cells if cell.sources is not None}
+    # broadcast to get correct sources (even if no broadcast is needed)
+    x1_broad, x2_broad = _force_broadcast_arrays(x1, x2)
 
-    cells = []
-    for cell in new_rep.cells:
-        input_id1 = cell.id.replace(f"{new_rep.id}_", f"{x1.id}_")
-        input_id1 = id1_mapping.get(input_id1, input_id1)
-        input_id2 = cell.id.replace(f"{new_rep.id}_", f"{x2.id}_")
-        input_id2 = id2_mapping.get(input_id2, input_id2)
-        cell = CellRepresentation(cell.id, cell.index, cell.value, [input_id1, input_id2])
-        cells.append(cell)
+    src_arr_ids = np.stack([x1_broad.src_arr_ids, x2_broad.src_arr_ids], axis=-1)
+    src_offsets = np.stack([x1_broad.src_offsets, x2_broad.src_offsets], axis=-1)
 
-    rep = ArrayRepresentation(new_rep.id, arr.dtype.kind, arr.ndim, arr.shape, tuple(cells))
-    return Array.from_representation(arr, rep)
+    return Array(arr, id=arr_id, src_arr_ids=src_arr_ids, src_offsets=src_offsets)
 
-def _reduction_operation(x, axis, array_op, py_op=None, fill_value=0, **kwargs):
+def _reduction_operation(x, axis, array_op, keepdims=False, **kwargs):
     arr = array_op(x.arr, axis, **kwargs)
-    y = np.full_like(arr, fill_value)
 
-    # create a mapping of (output) index to cell, so we can update the sources for each cell
-    new_rep = Array._get_representation(arr)
-    index_to_cell = {cell.index: cell for cell in new_rep.cells}
+    def normalize_axis(arr, a):
+        # convert negative axis a to be >= 0
+        return a if a >= 0 else a + arr.ndim
 
-    with np.nditer([x.arr, y],
-                        flags=["reduce_ok", "multi_index", "zerosize_ok"],
-                        op_flags=[["readonly"], ["readwrite"]],
-                        op_axes=[None, axis_to_axeslist(axis, x.ndim)]) as it:
-        for a, b in it:
-            # find the offset within the output array using the input multi index
-            offset = index_to_offset(it.itviews[1], it.multi_index)
-            # ... then convert it back to an index in the output array
-            index = offset_to_index(y, offset)
-            source_offset = f"{index_to_offset(x.arr, it.multi_index)}"
-            # update the sources for the cell
-            cell = index_to_cell[index]
-            sources = cell.sources or []
-            sources.append(f"{x.id}_{source_offset}")
-            index_to_cell[index] = CellRepresentation(cell.id, cell.index, cell.value, sources)
-            if py_op is not None:
-                # do the operation (as a sanity check)
-                b[...] = py_op(b[...], a)
+    # note that axis can be None, a single int, or a tuple of ints
+    if axis is None:
+        src_arr_ids = x.arr_ids.ravel()
+        src_offsets = x.offsets.ravel()
+    elif isinstance(axis, int):
+        # reduction in axis is equivalent to permuting the source arrays, so the
+        # axis being reduced becomes the last one
+        def move_axis_to_end(arr, axis):
+            axis = normalize_axis(arr, axis)
+            axes = list(range(arr.ndim))
+            del axes[axis]
+            axes.append(axis)
+            return np.transpose(arr, axes)
+        src_arr_ids = move_axis_to_end(x.arr_ids, axis)
+        src_offsets = move_axis_to_end(x.offsets, axis)
+    else:
+        # when axis specifies multiple axes, move them to the end, then flatten them
+        def move_axis_to_end(arr, axis):
+            axis = tuple(normalize_axis(arr, a) for a in axis)
+            axes = list(range(arr.ndim))
+            axes = [a for a in axes if a not in axis]
+            axes.extend(axis)
+            res = np.transpose(arr, axes)
 
-    if py_op is not None:
-        assert_array_equal(y, arr)
+            shape = tuple([arr.shape[a] for a in axes if a not in axis]) + (-1,)
+            return res.reshape(shape)
 
-    rep = ArrayRepresentation(new_rep.id, arr.dtype.kind, arr.ndim, arr.shape, tuple(index_to_cell.values()))
-    return Array.from_representation(arr, rep)
+        src_arr_ids = move_axis_to_end(x.arr_ids, axis)
+        src_offsets = move_axis_to_end(x.offsets, axis)
+        
+
+    if keepdims and x.ndim > 0:
+        if axis is None:
+            axis = tuple(range(x.ndim))
+        arr = np.expand_dims(arr, axis)
+        src_arr_ids = np.expand_dims(src_arr_ids, axis)
+        src_offsets = np.expand_dims(src_offsets, axis)
+
+    return Array(arr, src_arr_ids=src_arr_ids, src_offsets=src_offsets)

@@ -4,6 +4,8 @@
 # Good animations are hard to implement for these functions!
 
 from itertools import product
+from math import prod
+
 import numpy as np
 from numpy.compat import basestring
 #from numpy.core.einsumfunc import _parse_einsum_input
@@ -214,8 +216,11 @@ def einsum(*operands, **kwargs):
         for cnum, char in enumerate(input):
             dimension_dict[char] = operand.shape[cnum]
 
+    # TODO: not sure if this is right in general!
+    n_sources = len(ops) * prod([dimension_dict[ind] for ind in contract_inds])
+
     def sub(input, d):
-        # substitute index labels in the input with values from the dictonary
+        # substitute index labels in the input with values from the dictionary
         return tuple(d.get(i, i) for i in input)
 
     def get_sources(output_ind):
@@ -227,21 +232,27 @@ def einsum(*operands, **kwargs):
             contract_d = {ind: val for ind, val in zip(contract_inds, con)}
             yield [sub(input, contract_d) for input in inputs_sub]
 
-    new_rep = Array._get_representation(arr)
-    cells = []
-    for cell in new_rep.cells:
-        sources = list(get_sources(cell.index))
-        sources_by_input = list(zip(*sources))
-        all_sources = []
-        for operand, input_indexes in zip(ops, sources_by_input):
-            cell_ids = [cell.id for cell in operand.representation.cells if cell.index in input_indexes]
-            all_sources.extend(cell_ids)
-        
-        cell = CellRepresentation(cell.id, cell.index, cell.value, all_sources)
-        cells.append(cell)
+    src_arr_ids = np.full(arr.shape + (n_sources,), -1, dtype=np.int32)
+    src_offsets = np.full(arr.shape + (n_sources,), -1, dtype=np.int32)
 
-    rep = ArrayRepresentation(new_rep.id, arr.dtype.kind, arr.ndim, arr.shape, tuple(cells))
-    return Array.from_representation(arr, rep)
+    cell_src_arr_ids = np.empty(n_sources, dtype=np.int32)
+    cell_src_offsets = np.empty(n_sources, dtype=np.int32)
+
+    it = np.nditer(arr, flags=["multi_index", "zerosize_ok"], order="C")
+    for _ in it:
+        cell_index = it.multi_index
+        sources = list(get_sources(cell_index))
+        sources_by_input = list(zip(*sources))
+        for i, (operand, input_indexes) in enumerate(zip(ops, sources_by_input)):
+            tmp_src_arr_ids = operand.arr_ids[tuple(zip(*input_indexes))]
+            tmp_src_offsets = operand.offsets[tuple(zip(*input_indexes))]
+            cell_src_arr_ids[i * len(sources) : (i+1) * len(sources)] = tmp_src_arr_ids
+            cell_src_offsets[i * len(sources) : (i+1) * len(sources)] = tmp_src_offsets
+        
+        src_arr_ids[cell_index] = cell_src_arr_ids
+        src_offsets[cell_index] = cell_src_offsets
+
+    return Array(arr, src_arr_ids=src_arr_ids, src_offsets=src_offsets)
 
 
 def matmul(x1, x2, /):

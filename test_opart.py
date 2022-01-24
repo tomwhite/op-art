@@ -64,28 +64,31 @@ def test_meshgrid():
     b = opart.asarray([5, 6, 7])
     c, d = opart.meshgrid(a, b)
 
+    assert_array_equal(c.arr, np.meshgrid(a.arr, b.arr)[0])
+    assert_array_equal(d.arr, np.meshgrid(a.arr, b.arr)[1])
+
     assert c.representation.ndim == 2
-    assert c.representation.shape == (4, 3)
+    assert c.representation.shape == (3, 4)
     assert asdict(c.representation.cells[0]) == dict(
-        id="6_0", index=(0, 0), value=1, sources=["2_0"]
+        id="6_0", index=(0, 0), value=1, sources=["4_0"]
     )
     assert asdict(c.representation.cells[1]) == dict(
-        id="6_8", index=(0, 1), value=1, sources=["2_0"]
+        id="6_8", index=(0, 1), value=2, sources=["4_8"]
     )   
-    assert asdict(c.representation.cells[3]) == dict(
-        id="6_24", index=(1, 0), value=2, sources=["2_8"]
+    assert asdict(c.representation.cells[4]) == dict(
+        id="6_32", index=(1, 0), value=1, sources=["4_0"]
     )
 
     assert d.representation.ndim == 2
-    assert d.representation.shape == (4, 3)
+    assert d.representation.shape == (3, 4)
     assert asdict(d.representation.cells[0]) == dict(
-        id="7_0", index=(0, 0), value=5, sources=["3_0"]
+        id="7_0", index=(0, 0), value=5, sources=["5_0"]
     )
     assert asdict(d.representation.cells[1]) == dict(
-        id="7_8", index=(0, 1), value=6, sources=["3_8"]
+        id="7_8", index=(0, 1), value=5, sources=["5_0"]
     )   
-    assert asdict(d.representation.cells[3]) == dict(
-        id="7_24", index=(1, 0), value=5, sources=["3_0"]
+    assert asdict(d.representation.cells[4]) == dict(
+        id="7_32", index=(1, 0), value=6, sources=["5_8"]
     )
 
 def test_tril():
@@ -124,6 +127,27 @@ def test_triu():
         id="1_24", index=(1, 0), value=0, sources=None
     )   
 
+def test_tril_3d():
+    opart.reset_ids()
+
+    a = opart.arange(1, 19)
+    a = opart.reshape(a, (2, 3, 3))
+    b = opart.tril(a)
+
+    assert_array_equal(b.arr, np.tril(np.arange(1, 19).reshape(2, 3, 3)))
+
+    assert b.representation.ndim == 3
+    assert b.representation.shape == (2, 3, 3)
+    assert asdict(b.representation.cells[0]) == dict(
+        id="2_0", index=(0, 0, 0), value=1, sources=["1_0"]
+    )
+    assert asdict(b.representation.cells[1]) == dict(
+        id="2_8", index=(0, 0, 1), value=0, sources=["1_8"]
+    )   
+    assert asdict(b.representation.cells[3]) == dict(
+        id="2_24", index=(0, 1, 0), value=4, sources=["1_24"]
+    )
+
 def test_single_axis_indexing():
     opart.reset_ids()
 
@@ -133,6 +157,21 @@ def test_single_axis_indexing():
     assert_array_equal(b.arr, np.arange(6)[1:3])
     assert asdict(b.representation.cells[0]) == dict(
         id="1_0", index=(0,), value=1, sources=["0_8"]
+    )
+
+def test_boolean_indexing():
+    opart.reset_ids()
+
+    a = opart.arange(6)
+    b = opart.asarray([True, False, True, False, True, False])
+    c = a[b]
+
+    assert_array_equal(c.arr, a.arr[b.arr])
+    assert asdict(c.representation.cells[0]) == dict(
+        id="2_0", index=(0,), value=0, sources=["0_0"]
+    )
+    assert asdict(c.representation.cells[1]) == dict(
+        id="2_8", index=(1,), value=2, sources=["0_16"]
     )
 
 def test_reshape_and_index():
@@ -199,6 +238,32 @@ def test_setitem():
         id="1_8", index=(0, 1), value=0, sources=["0_0"]
     )
 
+def test_setitem_multiple_sources():
+    opart.reset_ids()
+
+    a = opart.ones((3, 2))
+
+    b = opart.ones((3, 2))
+
+    c = opart.add(a, b)
+
+    d = opart.arange(3)
+
+    c[:, 1] = d
+
+    c2 = np.ones((3, 2)) + np.ones((3, 2))
+    c2[:, 1] = np.arange(3)
+    assert_array_equal(c.arr, c2)
+
+    assert c.representation.shape == (3, 2)
+    assert len(c.representation.cells) == 6
+    assert asdict(c.representation.cells[0]) == dict(
+        id="2_0", index=(0, 0), value=2, sources=["0_0", "1_0"]
+    )
+    assert asdict(c.representation.cells[1]) == dict(
+        id="2_8", index=(0, 1), value=0, sources=["3_0"]
+    )
+
 def test_concat():
     opart.reset_ids()
 
@@ -210,6 +275,19 @@ def test_concat():
 
     assert asdict(c.representation.cells[0]) == dict(
         id="2_0", index=(0, 0), value=1, sources=["0_0"]
+    )
+
+def test_concat_no_axis():
+    opart.reset_ids()
+
+    a = opart.asarray([[1, 2], [3, 4]])
+    b = opart.asarray([[5], [6]])
+    c = opart.concat((a, b), axis=None)
+
+    assert_array_equal(c.arr, np.concatenate((np.array([[1, 2], [3, 4]]), np.array([[5], [6]])), axis=None))
+
+    assert asdict(c.representation.cells[0]) == dict(
+        id="4_0", index=(0,), value=1, sources=["2_0"]
     )
 
 def test_flip():
@@ -360,7 +438,25 @@ def test_negative():
     )
 
 
-def test_sum():
+def test_sum_no_axis():
+    print(np.arange(6).reshape((3, 2)).sum())
+    opart.reset_ids()
+
+    a = opart.arange(6)
+    a = opart.reshape(a, (3, 2))
+
+    b = opart.sum(a)
+
+    assert_array_equal(b.arr, np.arange(6).reshape((3, 2)).sum())
+    assert b.representation.ndim == 0
+    assert b.representation.shape == ()
+    assert len(b.representation.cells) == 1
+
+    assert asdict(b.representation.cells[0]) == dict(
+        id="2_0", index=(), value=15, sources=["1_0", "1_8", "1_16", "1_24", "1_32", "1_40"]
+    )
+
+def test_sum_single_axis():
     opart.reset_ids()
 
     a = opart.arange(6)
@@ -378,6 +474,39 @@ def test_sum():
     )
     assert asdict(b.representation.cells[1]) == dict(
         id="2_8", index=(1,), value=9, sources=["1_8", "1_24", "1_40"]
+    )
+
+def test_sum_multiple_axes():
+    opart.reset_ids()
+
+    a = opart.arange(24)
+    a = opart.reshape(a, (3, 2, 4))
+
+    b = opart.sum(a, axis=(0, 2))
+
+    assert_array_equal(b.arr, np.arange(24).reshape((3, 2, 4)).sum(axis=(0, 2)))
+    assert b.representation.ndim == 1
+    assert b.representation.shape == (2,)
+    assert len(b.representation.cells) == 2
+
+def test_sum_keepdims():
+    opart.reset_ids()
+
+    a = opart.arange(6)
+    a = opart.reshape(a, (3, 2))
+
+    b = opart.sum(a, axis=0, keepdims=True)
+
+    assert_array_equal(b.arr, np.arange(6).reshape((3, 2)).sum(axis=0, keepdims=True))
+    assert b.representation.ndim == 2
+    assert b.representation.shape == (1, 2)
+    assert len(b.representation.cells) == 2
+
+    assert asdict(b.representation.cells[0]) == dict(
+        id="2_0", index=(0, 0), value=6, sources=["1_0", "1_16", "1_32"]
+    )
+    assert asdict(b.representation.cells[1]) == dict(
+        id="2_8", index=(0, 1), value=9, sources=["1_8", "1_24", "1_40"]
     )
 
 
@@ -468,13 +597,13 @@ def test_unique_counts():
 
     assert len(c.representation.cells) == 4
     assert asdict(c.representation.cells[0]) == dict(
-        id="2_0", index=(0,), value=2, sources=["0_32", "0_40"]
+        id="4_0", index=(0,), value=2, sources=["0_32", "0_40"]
     )
     assert asdict(c.representation.cells[1]) == dict(
-        id="2_8", index=(1,), value=2, sources=["0_0", "0_8"]
+        id="4_8", index=(1,), value=2, sources=["0_0", "0_8"]
     )
     assert asdict(c.representation.cells[2]) == dict(
-        id="2_16", index=(2,), value=1, sources=["0_16"]
+        id="4_16", index=(2,), value=1, sources=["0_16"]
     )
 
 def test_unique_inverse():
@@ -496,13 +625,13 @@ def test_unique_inverse():
 
     assert len(c.representation.cells) == 6
     assert asdict(c.representation.cells[0]) == dict(
-        id="2_0", index=(0,), value=1, sources=["0_0"]
+        id="3_0", index=(0,), value=1, sources=["0_0"]
     )
     assert asdict(c.representation.cells[1]) == dict(
-        id="2_8", index=(1,), value=1, sources=["0_8"]
+        id="3_8", index=(1,), value=1, sources=["0_8"]
     )
     assert asdict(c.representation.cells[2]) == dict(
-        id="2_16", index=(2,), value=2, sources=["0_16"]
+        id="3_16", index=(2,), value=2, sources=["0_16"]
     )
 
 def test_unique_all():
@@ -524,6 +653,44 @@ def test_unique_all():
     )
     assert asdict(c.representation.cells[2]) == dict(
         id="2_16", index=(2,), value=2, sources=["0_16"]
+    )
+
+def test_unique_2d():
+    opart.reset_ids()
+
+    a = opart.asarray([2, 2, 3, 5, 1, 1])
+    a = opart.reshape(a, (2, 3))
+    b, c, d, e = opart.unique_all(a)
+
+    assert len(b.representation.cells) == 4
+    assert len(c.representation.cells) == 4
+    assert len(d.representation.cells) == 6
+    assert len(e.representation.cells) == 4
+
+    assert b.shape == (4,)
+    assert c.shape == (4,)
+    assert d.shape == (2, 3)
+    assert e.shape == (4,)
+
+    assert asdict(c.representation.cells[0]) == dict(
+        id="3_0", index=(0,), value=4, sources=["1_32", "1_40"]
+    )
+    assert asdict(c.representation.cells[1]) == dict(
+        id="3_8", index=(1,), value=0, sources=["1_0", "1_8"]
+    )
+    assert asdict(c.representation.cells[2]) == dict(
+        id="3_16", index=(2,), value=2, sources=["1_16"]
+    )
+
+    assert len(b.representation.cells) == 4
+    assert asdict(b.representation.cells[0]) == dict(
+        id="2_0", index=(0,), value=1, sources=["1_32", "1_40"]
+    )
+    assert asdict(b.representation.cells[1]) == dict(
+        id="2_8", index=(1,), value=2, sources=["1_0", "1_8"]
+    )
+    assert asdict(b.representation.cells[2]) == dict(
+        id="2_16", index=(2,), value=3, sources=["1_16"]
     )
 
 def test_einsum():

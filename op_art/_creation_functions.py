@@ -66,8 +66,8 @@ def meshgrid(*arrays, indexing="xy"):
 
     if indexing == "xy" and ndim > 1:
         # switch first and second axis
-        xp.reshape(output[0], (1, -1) + s0[2:])
-        xp.reshape(output[1], (-1, 1) + s0[2:])
+        output[0] = xp.reshape(output[0], (1, -1) + s0[2:])
+        output[1] = xp.reshape(output[1], (-1, 1) + s0[2:])
 
     return xp.broadcast_arrays(*output)
 
@@ -79,43 +79,32 @@ def ones_like(x, /, *, dtype=None, device=None):
     arr = np.ones_like(x.arr, dtype)
     return _direct_mapping(x, arr)
 
-def tril(x, /, *, k=0):
+def _tri(x, /, *, lower, k=0):
     if x.ndim < 2:
-        raise ValueError("x must be at least 2-dimensional for tril")
+        raise ValueError("x must be at least 2-dimensional for tril/triu")
+
+    if lower:
+        arr = np.tril(x.arr, k=k)
+        tri_indices = np.tril_indices(x.shape[-2], k=k, m=x.shape[-1])
+    else:
+        arr = np.triu(x.arr, k=k)
+        tri_indices = np.triu_indices(x.shape[-2], k=k, m=x.shape[-1])
+
+    src_arr_ids = np.full_like(arr, -1, dtype=np.int32)
+    src_offsets = np.full_like(arr, -1, dtype=np.int32)
     if x.ndim > 2:
-        raise NotImplementedError("tril only implemented for 2-dimensional arrays")
+        src_arr_ids[:, tri_indices] = x.arr_ids[:, tri_indices]
+        src_offsets[:, tri_indices] = x.offsets[:, tri_indices]
+    else:
+        src_arr_ids[tri_indices] = x.arr_ids[tri_indices]
+        src_offsets[tri_indices] = x.offsets[tri_indices]
+    return Array(arr, src_arr_ids=src_arr_ids, src_offsets=src_offsets)
 
-    arr = np.tril(x.arr, k=k)
-    rep = Array._get_representation(arr)
-
-    tril_indices = np.tril_indices_from(x.arr, k=k)
-    tril_indices = list(zip(*tril_indices))
-
-    x_index_to_cell = {cell.index: cell for cell in x.representation.cells}
-    for cell in rep.cells:
-        if cell.index in tril_indices:
-            source_id = x_index_to_cell[cell.index].id
-            cell.sources = [source_id]
-    return Array.from_representation(arr, rep)
+def tril(x, /, *, k=0):
+    return _tri(x, lower=True, k=k)
 
 def triu(x, /, *, k=0):
-    if x.ndim < 2:
-        raise ValueError("x must be at least 2-dimensional for triu")
-    if x.ndim > 2:
-        raise NotImplementedError("triu only implemented for 2-dimensional arrays")
-
-    arr = np.triu(x.arr, k=k)
-    rep = Array._get_representation(arr)
-
-    triu_indices = np.triu_indices_from(x.arr, k=k)
-    triu_indices = list(zip(*triu_indices))
-
-    x_index_to_cell = {cell.index: cell for cell in x.representation.cells}
-    for cell in rep.cells:
-        if cell.index in triu_indices:
-            source_id = x_index_to_cell[cell.index].id
-            cell.sources = [source_id]
-    return Array.from_representation(arr, rep)
+    return _tri(x, lower=False, k=k)
 
 def zeros(shape, *, dtype=None, device=None):
     arr = np.zeros(shape, dtype)

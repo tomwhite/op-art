@@ -15,7 +15,8 @@ def concat(arrays, /, *, axis=0):
 
     # For axis=None flatten arrays first
     if axis is None:
-        raise NotImplementedError("concat not implemented for axis=None")
+        arrays = [_direct_mapping(array, array.arr.ravel()) for array in arrays]
+        axis = 0
 
     import op_art as xp
     ndim = len(arrays[0].shape)
@@ -43,8 +44,7 @@ def permute_dims(x, /, axes):
     return einsum(x, x_indexes, output_indexes)
 
 def reshape(x, /, shape):
-    arr = np.reshape(x.arr, shape)
-    # TODO: reshape may do a copy (e.g. after flip or transpose), so we can't use _direct_mapping
+    arr = np.reshape(x.arr, shape, order="C")
     return _direct_mapping(x, arr)
 
 def roll(x, /, shift, *, axis=None):

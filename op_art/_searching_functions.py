@@ -3,42 +3,36 @@
 
 import numpy as np
 
-from ._array_object import Array, _normalize_two_args, _reduction_operation
+from ._array_object import Array, _normalize_two_args, _reduction_operation, _broadcast_arrays, _force_broadcast_arrays
 
 def argmax(x, /, *, axis=None, keepdims=False):
-    return _reduction_operation(x, axis, np.argmax)
+    return _reduction_operation(x, axis, np.argmax, keepdims=keepdims)
 
 def argmin(x, /, *, axis=None, keepdims=False):
-    return _reduction_operation(x, axis, np.argmin)
+    return _reduction_operation(x, axis, np.argmin, keepdims=keepdims)
 
 def nonzero(x, /):
-    arrs = tuple(Array(i) for i in np.nonzero(x.arr))
-
-    x_index_to_cell = {cell.index: cell for cell in x.representation.cells}
-    # iterate over zipped cells as coordinates into original array (x)
-    for cells in zip(*[arr.representation.cells for arr in arrs]):
-        source_index = tuple(c.value for c in cells)
-        source_id = x_index_to_cell[source_index].id
-        for cell in cells:
-            cell.sources = [source_id]
-    return arrs
+    arrs = np.nonzero(x.arr)
+    if x.ndim == 0:
+        src_arr_ids = None
+        src_offsets = None
+    else:
+        src_arr_ids = x.arr_ids[arrs]
+        src_offsets = x.offsets[arrs]
+    return tuple(Array(arr, src_arr_ids=src_arr_ids, src_offsets=src_offsets) for arr in arrs)
 
 def where(condition, x1, x2, /):
     x1, x2 = _normalize_two_args(x1, x2)
     arr = np.where(condition.arr, x1.arr, x2.arr)
-    rep = Array._get_representation(arr)
 
-    # TODO: broadcast if necessary (like in _elementwise_binary_operation)
+    # broadcast to get correct sources (even if no broadcast is needed)
+    condition_broad, x1_broad, x2_broad = _force_broadcast_arrays(condition, x1, x2)
 
-    condition_index_to_cell = {cell.index: cell for cell in condition.representation.cells}
-    x1_index_to_cell = {cell.index: cell for cell in x1.representation.cells}
-    x2_index_to_cell = {cell.index: cell for cell in x2.representation.cells}
-    for cell in rep.cells:
-        condition_cell = condition_index_to_cell[cell.index]
-        x1_cell = x1_index_to_cell[cell.index]
-        x2_cell = x2_index_to_cell[cell.index]
-        if condition_cell.value:
-            cell.sources = [condition_cell.id, x1_cell.id]
-        else:
-            cell.sources = [condition_cell.id, x2_cell.id]
-    return Array.from_representation(arr, rep)
+    # use np.where on the source arrays
+    x1_or_x2_src_arr_ids = np.where(condition.arr, x1_broad.src_arr_ids, x2_broad.src_arr_ids)
+    src_arr_ids = np.stack([condition_broad.src_arr_ids, x1_or_x2_src_arr_ids], axis=-1)
+
+    x1_or_x2_src_offsets = np.where(condition.arr, x1_broad.src_offsets, x2_broad.src_offsets)
+    src_offsets = np.stack([condition_broad.src_offsets, x1_or_x2_src_offsets], axis=-1)
+
+    return Array(arr, src_arr_ids=src_arr_ids, src_offsets=src_offsets)
