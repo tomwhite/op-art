@@ -396,14 +396,6 @@ class Array:
             cells.append(CellRepresentation(cell_id, it.multi_index, x.item(), cell_sources))
         return ArrayRepresentation(id, arr.dtype.kind, arr.ndim, arr.shape, tuple(cells))
 
-
-    @staticmethod
-    def from_representation(arr, rep):
-        """Create an array directly from cell dependencies (not input or output representations)"""
-        a = Array(arr, id=rep.id)
-        a.representation = rep
-        return a
-
     def to_json(self, visible_ids=None):
         return asdict(rewrite_representation(self.representation, visible_ids))
 
@@ -419,7 +411,7 @@ class Array:
         })(element);
         """ % json.dumps([self.to_json(visible_ids=[self.id])])
 
-@dataclass(frozen=False)  # note frozen due to __setitem__
+@dataclass()
 class CellRepresentation:
     id: Any
     index: Any
@@ -427,19 +419,13 @@ class CellRepresentation:
     sources: Any = None
 
 
-@dataclass(frozen=False)
+@dataclass()
 class ArrayRepresentation:
     id: int
     kind: str
     ndim: int
     shape: Any
     cells: Tuple[CellRepresentation]
-
-    # allow cells to be looked up by index
-    def __getitem__(self, item):
-        if not hasattr(self, "cell_index"):
-            self.cell_index = {cell.index: cell for cell in self.cells}
-        return self.cell_index[item]
 
 
 def _rewrite_sources(source_ids, visible_ids, cell_id_to_sources):
