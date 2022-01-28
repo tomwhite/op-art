@@ -7,7 +7,7 @@ except ImportError:
 
 from ._constants import e, inf, nan, pi
 
-from ._array_object import arrays_to_html, get_source, reset_ids, visualize, write_html
+from ._array_object import reset_ids
 
 from ._data_type_functions import astype, broadcast_arrays, broadcast_to, can_cast, finfo, iinfo, result_type
 
@@ -32,3 +32,6 @@ from ._sorting_functions import argsort, sort
 from ._set_functions import unique_all, unique_counts, unique_inverse, unique_values
 
 from ._utility_functions import all, any
+
+from ._visualization import arrays_to_html, get_source, visualize, write_html
+

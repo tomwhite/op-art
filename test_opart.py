@@ -12,7 +12,7 @@ def test_rewrite_representation():
     a = opart.arange(6)
     b = opart.reshape(a, (3, 2))
 
-    from op_art._array_object import rewrite_representation
+    from op_art._visualization import rewrite_representation
 
     assert asdict(b.representation.cells[0]) == dict(
         id="1_0", index=(0, 0), value=0, sources=['0_0']
