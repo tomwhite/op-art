@@ -28,11 +28,8 @@ class Array:
         self.representation = Array._get_representation(self.arr, self.id, src_arr_ids, src_offsets)
         assert self.representation.id == self.id
         self.arr_ids = np.full_like(arr, self.id, dtype=np.int32)
-        self.offsets = np.empty_like(arr, dtype=np.int32)
-        it = np.nditer(arr, flags=["multi_index", "zerosize_ok"], order="C")
-        for _ in it:
-            offset = index_to_offset(arr, it.multi_index)
-            self.offsets[it.multi_index] = offset
+        self.offsets = np.arange(0, arr.size * arr.itemsize, arr.itemsize, dtype=np.int32)\
+            .reshape(arr.shape)
         self.src_arr_ids = src_arr_ids
         self.src_offsets = src_offsets
         id_to_array[self.id] = self
