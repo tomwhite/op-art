@@ -7,7 +7,7 @@
 import numpy as np
 
 from ._array_object import _direct_mapping
-from ._linear_algebra_functions import einsum
+from ._einsum import einsum
 
 def concat(arrays, /, *, axis=0):
     # call np version for error cases 

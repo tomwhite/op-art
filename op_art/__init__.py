@@ -13,6 +13,8 @@ from ._data_type_functions import astype, broadcast_arrays, broadcast_to, can_ca
 
 from ._dtypes import int8, int16, int32, int64, uint8, uint16, uint32, uint64, float32, float64, bool
 
+from ._einsum import einsum
+
 from ._creation_functions import arange, asarray, empty, empty_like, eye, from_dlpack, full, full_like, linspace, meshgrid, ones, ones_like, tril, triu, zeros, zeros_like
 
 from ._manipulation_functions import concat, expand_dims, flip, permute_dims, reshape, roll, squeeze, stack
@@ -21,7 +23,7 @@ from ._elementwise_functions import abs, acos, acosh, add, asin, asinh, atan, at
 
 from ._statistical_functions import max, mean, min, prod, std, sum, var
 
-from ._linear_algebra_functions import einsum, matmul, matrix_transpose, tensordot, vecdot
+from ._linear_algebra_functions import matmul, matrix_transpose, tensordot, vecdot
 
 from ._searching_functions import argmax, argmin, nonzero, where
 
