@@ -6,7 +6,6 @@ import json
 import numpy as np
 
 from ._dtypes import _boolean_dtypes, _floating_dtypes
-from ._utils import index_to_offset
 
 id_gen = itertools.count()
 id_to_array = {}
@@ -19,19 +18,19 @@ def reset_ids():
     id_to_array = {}
 
 class Array:
-    def __init__(self, arr, *, id=None, src_arr_ids=None, src_offsets=None):
+    def __init__(self, arr, src_arr_ids=None, src_offsets=None, *, id=None):
         if isinstance(arr, np.generic):
             # Convert the array scalar to a 0-D array
             arr = np.asarray(arr)
         self.arr = arr
         self.id = id if id is not None else next(id_gen)
-        self.representation = Array._get_representation(self.arr, self.id, src_arr_ids, src_offsets)
-        assert self.representation.id == self.id
         self.arr_ids = np.full_like(arr, self.id, dtype=np.int32)
         self.offsets = np.arange(0, arr.size * arr.itemsize, arr.itemsize, dtype=np.int32)\
             .reshape(arr.shape)
         self.src_arr_ids = src_arr_ids
         self.src_offsets = src_offsets
+        self.representation = Array._get_representation(self.arr, self.id, self.offsets, src_arr_ids, src_offsets)
+        assert self.representation.id == self.id
         id_to_array[self.id] = self
   
     @property
@@ -66,7 +65,7 @@ class Array:
         arr = self.arr.T
         src_arr_ids = self.arr_ids.T
         src_offsets = self.offsets.T
-        return Array(arr, src_arr_ids=src_arr_ids, src_offsets=src_offsets)
+        return Array(arr, src_arr_ids, src_offsets)
 
 
     def to_device(self, device, /, stream=None):
@@ -100,7 +99,7 @@ class Array:
         indexed_arr = self.arr[item]
         indexed_src_arr_ids = self.arr_ids[item]
         indexed_src_offsets = self.offsets[item]
-        return Array(indexed_arr, src_arr_ids=indexed_src_arr_ids, src_offsets=indexed_src_offsets)
+        return Array(indexed_arr, indexed_src_arr_ids, indexed_src_offsets)
 
     def __setitem__(self, item, value):
         if isinstance(item, Array): # boolean array
@@ -126,7 +125,7 @@ class Array:
         else:
             self.src_arr_ids[item] = value.arr_ids
             self.src_offsets[item] = value.offsets
-        self.representation = Array._get_representation(self.arr, self.id, self.src_arr_ids, self.src_offsets)
+        self.representation = Array._get_representation(self.arr, self.id, self.offsets, self.src_arr_ids, self.src_offsets)
 
     def __abs__(self, /):
         return _elementwise_unary_operation(self, np.abs)
@@ -360,12 +359,12 @@ class Array:
         return _elementwise_binary_operation(other, self, np.logical_xor)
 
     @staticmethod
-    def _get_representation(arr, id, src_arr_ids, src_offsets):
+    def _get_representation(arr, id, offsets, src_arr_ids, src_offsets):
         """Convert array into a representation suitable for visualization"""
         cells = []
-        it = np.nditer(arr, flags=["multi_index", "refs_ok", "zerosize_ok"])
+        it = np.nditer(arr, flags=["multi_index", "refs_ok", "zerosize_ok"], order="C")
         for x in it:
-            offset = builtins.sum((np.array(it.multi_index) * arr.strides).tolist())  # tolist to convert to python int
+            offset = offsets[it.multi_index]
             cell_id = f"{id}_{offset}"
             if src_arr_ids is None:
                 cell_sources = None
@@ -419,48 +418,9 @@ class ArrayRepresentation:
     cells: Tuple[CellRepresentation]
 
 
-def _broadcast_to(x, shape, id=None):
-    arr = np.broadcast_to(x.arr, shape)
-    arr_mat = np.copy(arr, order="C") # "materialize" array so cell ids in result are unique
-
-    src_arr_ids = np.full_like(arr_mat, x.id, dtype=np.int32)
-    src_offsets = np.full_like(arr_mat, -1, dtype=np.int32)
-    it1 = np.nditer(arr, flags=["multi_index", "zerosize_ok"], order="C")
-    it2 = np.nditer(arr_mat, flags=["multi_index", "zerosize_ok"], order="C")
-    for _, _ in zip(it1, it2):
-        offset = index_to_offset(arr, it1.multi_index)
-        src_offsets[it2.multi_index] = offset
-    return Array(arr_mat, id=id, src_arr_ids=src_arr_ids, src_offsets=src_offsets)
-
-def _broadcast_arrays(*arrays):
-    shape = np.broadcast_shapes(*[a.arr.shape for a in arrays])
-
-    if all(array.shape == shape for array in arrays):
-        return arrays
-
-    return [_broadcast_to(array, shape, array.id) for array in arrays]
-
-def _force_broadcast_arrays(*arrays):
-    shape = np.broadcast_shapes(*[a.arr.shape for a in arrays])
-    return [_broadcast_to(array, shape, array.id) for array in arrays]
-
-
-# Covers the case where input and output cells correspond directly by iteration order
-# (C order), even if they don't have corresponding indexes
-def _direct_mapping(input, output, id=None):
-    x, arr = input, output
-    src_arr_ids = np.full_like(arr, x.id, dtype=np.int32)
-    src_offsets = np.full_like(arr, -1, dtype=np.int32)
-    it1 = np.nditer(x.arr, flags=["multi_index", "zerosize_ok"], order="C")
-    it2 = np.nditer(arr, flags=["multi_index", "zerosize_ok"], order="C")
-    for _, _ in zip(it1, it2):
-        offset = index_to_offset(x.arr, it1.multi_index)
-        src_offsets[it2.multi_index] = offset
-    return Array(arr, id=id, src_arr_ids=src_arr_ids, src_offsets=src_offsets)
-
 def _elementwise_unary_operation(x, array_op):
     arr = array_op(x.arr)
-    return _direct_mapping(x, arr)
+    return Array(arr, x.arr_ids, x.offsets)
 
 # copied from https://github.com/data-apis/numpy/blob/array-api/numpy/_array_api/_array_object.py
 def _normalize_two_args(x1, x2):
@@ -491,15 +451,22 @@ def _normalize_two_args(x1, x2):
 def _elementwise_binary_operation(x1, x2, array_op):
     x1, x2 = _normalize_two_args(x1, x2)
     arr = array_op(x1.arr, x2.arr)
-    arr_id = next(id_gen)
 
-    # broadcast to get correct sources (even if no broadcast is needed)
-    x1_broad, x2_broad = _force_broadcast_arrays(x1, x2)
+    # broadcast if necessary
+    from ._data_type_functions import broadcast_arrays
+    x1_broad, x2_broad = broadcast_arrays(x1, x2)
 
-    src_arr_ids = np.stack([x1_broad.src_arr_ids, x2_broad.src_arr_ids], axis=-1)
-    src_offsets = np.stack([x1_broad.src_offsets, x2_broad.src_offsets], axis=-1)
+    src_arr_ids = np.stack([x1_broad.arr_ids, x2_broad.arr_ids], axis=-1)
+    src_offsets = np.stack([x1_broad.offsets, x2_broad.offsets], axis=-1)
 
-    return Array(arr, id=arr_id, src_arr_ids=src_arr_ids, src_offsets=src_offsets)
+    return Array(arr, src_arr_ids, src_offsets)
+
+def _structural_operation(x, array_op, *args, **kwargs):
+    # Suitable for operations that change the structure of x, not its values
+    arr = array_op(x.arr, *args, **kwargs)
+    src_arr_ids = array_op(x.arr_ids, *args, **kwargs)
+    src_offsets = array_op(x.offsets, *args, **kwargs)
+    return Array(arr, src_arr_ids, src_offsets)
 
 def _reduction_operation(x, axis, array_op, keepdims=False, **kwargs):
     arr = array_op(x.arr, axis, **kwargs)
@@ -546,4 +513,4 @@ def _reduction_operation(x, axis, array_op, keepdims=False, **kwargs):
         src_arr_ids = np.expand_dims(src_arr_ids, axis)
         src_offsets = np.expand_dims(src_offsets, axis)
 
-    return Array(arr, src_arr_ids=src_arr_ids, src_offsets=src_offsets)
+    return Array(arr, src_arr_ids, src_offsets)

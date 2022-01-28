@@ -4,12 +4,13 @@
 import numpy as np
 from numpy import array_api as nxp
 
-from ._array_object import Array, _broadcast_to, _direct_mapping
+from ._array_object import Array, _structural_operation
 
 def astype(x, dtype, /, *, copy=True):
     if not copy and dtype == x.dtype:
         return x
-    return _direct_mapping(x, x.arr.astype(dtype=dtype, copy=copy))
+    arr = x.arr.astype(dtype=dtype, copy=copy)
+    return Array(arr, x.arr_ids, x.offsets)
 
 def broadcast_arrays(*arrays):
     # based on the numpy implementation
@@ -21,7 +22,7 @@ def broadcast_arrays(*arrays):
     return [broadcast_to(array, shape) for array in arrays]
 
 def broadcast_to(x, /, shape):
-    return _broadcast_to(x, shape)
+    return _structural_operation(x, np.broadcast_to, shape)
 
 def can_cast(from_, to, /):
     if isinstance(from_, Array):

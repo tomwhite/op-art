@@ -5,7 +5,7 @@ import numpy as np
 
 from typing import NamedTuple
 
-from ._array_object import Array, _direct_mapping
+from ._array_object import Array
 
 class UniqueAllResult(NamedTuple):
     values: Array
@@ -49,10 +49,10 @@ def _unique(x):
         src_arr_ids[i, :size] = sorted_src_arr_ids[sl]
         src_offsets[i, :size] = sorted_src_offsets[sl]
 
-    values = Array(arr, src_arr_ids=src_arr_ids, src_offsets=src_offsets)
-    indices = Array(ind, src_arr_ids=src_arr_ids, src_offsets=src_offsets)
-    inverse_indices = _direct_mapping(x, inv.reshape(x.shape))
-    counts = Array(counts, src_arr_ids=src_arr_ids, src_offsets=src_offsets)
+    values = Array(arr, src_arr_ids, src_offsets)
+    indices = Array(ind, src_arr_ids, src_offsets)
+    inverse_indices = Array(inv.reshape(x.shape), x.arr_ids, x.offsets)
+    counts = Array(counts, src_arr_ids, src_offsets)
     return values, indices, inverse_indices, counts
 
 def unique_all(x, /):

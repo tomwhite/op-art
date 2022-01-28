@@ -247,4 +247,4 @@ def einsum(*operands, **kwargs):
         src_arr_ids[cell_index] = cell_src_arr_ids
         src_offsets[cell_index] = cell_src_offsets
 
-    return Array(arr, src_arr_ids=src_arr_ids, src_offsets=src_offsets)
+    return Array(arr, src_arr_ids, src_offsets)

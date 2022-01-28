@@ -70,25 +70,25 @@ def test_meshgrid():
     assert c.representation.ndim == 2
     assert c.representation.shape == (3, 4)
     assert asdict(c.representation.cells[0]) == dict(
-        id="6_0", index=(0, 0), value=1, sources=["4_0"]
+        id="2_0", index=(0, 0), value=1, sources=["0_0"]
     )
     assert asdict(c.representation.cells[1]) == dict(
-        id="6_8", index=(0, 1), value=2, sources=["4_8"]
+        id="2_8", index=(0, 1), value=2, sources=["0_8"]
     )   
     assert asdict(c.representation.cells[4]) == dict(
-        id="6_32", index=(1, 0), value=1, sources=["4_0"]
+        id="2_32", index=(1, 0), value=1, sources=["0_0"]
     )
 
     assert d.representation.ndim == 2
     assert d.representation.shape == (3, 4)
     assert asdict(d.representation.cells[0]) == dict(
-        id="7_0", index=(0, 0), value=5, sources=["5_0"]
+        id="3_0", index=(0, 0), value=5, sources=["1_0"]
     )
     assert asdict(d.representation.cells[1]) == dict(
-        id="7_8", index=(0, 1), value=5, sources=["5_0"]
+        id="3_8", index=(0, 1), value=5, sources=["1_0"]
     )   
     assert asdict(d.representation.cells[4]) == dict(
-        id="7_32", index=(1, 0), value=6, sources=["5_8"]
+        id="3_32", index=(1, 0), value=6, sources=["1_8"]
     )
 
 def test_tril():
@@ -207,16 +207,17 @@ def test_reshape_after_flip():
 
     a = opart.arange(6)
     b = opart.reshape(a, (3, 2))
+
     c = opart.flip(b, axis=0)
 
     assert asdict(c.representation.cells[1]) == dict(
-        id="2_-24", index=(2, 1), value=1, sources=["1_8"]
+        id="2_8", index=(0, 1), value=5, sources=["1_40"]
     )
 
     d = opart.reshape(c, 6)
 
-    assert asdict(d.representation.cells[5]) == dict(
-        id="3_40", index=(5,), value=1, sources=["2_-24"]
+    assert asdict(d.representation.cells[1]) == dict(
+        id="3_8", index=(1,), value=5, sources=["2_8"]
     )
 
 def test_setitem():
@@ -287,7 +288,7 @@ def test_concat_no_axis():
     assert_array_equal(c.arr, np.concatenate((np.array([[1, 2], [3, 4]]), np.array([[5], [6]])), axis=None))
 
     assert asdict(c.representation.cells[0]) == dict(
-        id="4_0", index=(0,), value=1, sources=["2_0"]
+        id="2_0", index=(0,), value=1, sources=["0_0"]
     )
 
 def test_flip():
@@ -317,7 +318,7 @@ def test_roll():
 
     assert_array_equal(b.arr, np.roll(np.arange(6), 2))
     assert asdict([cell for cell in b.representation.cells if cell.index == (0,)][0]) == dict(
-        id="5_0", index=(0,), value=4, sources=["2_0"]
+        id="1_0", index=(0,), value=4, sources=["0_32"]
     )
 
 def test_stack():
@@ -330,7 +331,7 @@ def test_stack():
     assert_array_equal(c.arr, np.stack((np.array([1, 2, 3]), np.array([2, 3, 4]))))
 
     assert asdict(c.representation.cells[0]) == dict(
-        id="4_0", index=(0, 0), value=1, sources=["2_0"]
+        id="2_0", index=(0, 0), value=1, sources=["0_0"]
     )
 
 def test_transpose_attr():
@@ -351,7 +352,7 @@ def test_transpose_attr():
         id="2_0", index=(0, 0), value=0, sources=["1_0"]
     )
     assert asdict(c.representation.cells[1]) == dict(
-        id="2_8", index=(1, 0), value=1, sources=["1_8"]
+        id="2_8", index=(0, 1), value=2, sources=["1_16"]
     )
 
 def test_add_ones():
@@ -391,10 +392,10 @@ def test_add_ones_broadcast():
     assert len(c.representation.cells) == 2
 
     assert asdict(c.representation.cells[0]) == dict(
-        id="2_0", index=(0, 0), value=2, sources=["0_0", "1_0"]
+        id="4_0", index=(0, 0), value=2, sources=["2_0", "3_0"]
     )
     assert asdict(c.representation.cells[1]) == dict(
-        id="2_8", index=(0, 1), value=2, sources=["0_8", "1_0"]
+        id="4_8", index=(0, 1), value=2, sources=["2_8", "3_8"]
     )
 
 
@@ -747,8 +748,8 @@ def test_matrix_transpose():
         sources=["1_0"]
     )
     assert asdict(b.representation.cells[1]) == dict(
-        id="2_8", index=(1, 0), value=1,
-        sources=["1_8"]
+        id="2_8", index=(0, 1), value=2,
+        sources=["1_16"]
     )
 
     assert_array_equal(b.arr, np.transpose(np.arange(6).reshape(3, 2)))
@@ -785,7 +786,7 @@ def test_nonzero():
         id="1_0", index=(0,), value=0, sources=["0_0"]
     )
     assert asdict(b.representation.cells[1]) == dict(
-        id="1_16", index=(1,), value=1, sources=["0_32"]
+        id="1_8", index=(1,), value=1, sources=["0_32"]
     )
 
     assert c.representation.ndim == 1
@@ -794,7 +795,7 @@ def test_nonzero():
         id="2_0", index=(0,), value=0, sources=["0_0"]
     )
     assert asdict(c.representation.cells[1]) == dict(
-        id="2_16", index=(1,), value=1, sources=["0_32"]
+        id="2_8", index=(1,), value=1, sources=["0_32"]
     )
 
 def test_where():

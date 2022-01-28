@@ -3,7 +3,6 @@
 
 # These all follow the same pattern.
 
-import operator
 import numpy as np
 
 from ._array_object import _reduction_operation
