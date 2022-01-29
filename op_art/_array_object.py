@@ -24,7 +24,7 @@ class Array:
             arr = np.asarray(arr)
         self.arr = arr
         self.id = id if id is not None else next(id_gen)
-        self.arr_ids = np.full_like(arr, self.id, dtype=np.int32)
+        self.arr_ids = np.broadcast_to(np.array(self.id, dtype=np.int32), self.arr.shape)
         self.offsets = np.arange(0, arr.size * arr.itemsize, arr.itemsize, dtype=np.int32)\
             .reshape(arr.shape)
         self.src_arr_ids = src_arr_ids
