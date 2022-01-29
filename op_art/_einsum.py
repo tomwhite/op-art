@@ -2,6 +2,7 @@ from itertools import product
 from math import prod
 
 import numpy as np
+import numpy.array_api as nxp
 from numpy.compat import basestring
 #from numpy.core.einsumfunc import _parse_einsum_input
 
@@ -193,7 +194,8 @@ def _parse_einsum_input(operands):
 def einsum(*operands, **kwargs):
 
     def extract_array(o):
-        return o.arr if isinstance(o, Array) else o
+        # use np.asarray to convert array api array to np
+        return np.asarray(o.arr) if isinstance(o, Array) else o
 
     arr = np.einsum(*[extract_array(o) for o in operands], **kwargs)
 
@@ -239,12 +241,18 @@ def einsum(*operands, **kwargs):
         sources = list(get_sources(cell_index))
         sources_by_input = list(zip(*sources))
         for i, (operand, input_indexes) in enumerate(zip(ops, sources_by_input)):
-            tmp_src_arr_ids = operand.arr_ids[tuple(zip(*input_indexes))]
-            tmp_src_offsets = operand.offsets[tuple(zip(*input_indexes))]
+            # convert from xp to np array
+            tmp_src_arr_ids = np.asarray(operand.arr_ids)[tuple(zip(*input_indexes))]
+            tmp_src_offsets = np.asarray(operand.offsets)[tuple(zip(*input_indexes))]
             cell_src_arr_ids[i * len(sources) : (i+1) * len(sources)] = tmp_src_arr_ids
             cell_src_offsets[i * len(sources) : (i+1) * len(sources)] = tmp_src_offsets
         
         src_arr_ids[cell_index] = cell_src_arr_ids
         src_offsets[cell_index] = cell_src_offsets
+
+    # convert back to array api types
+    arr = nxp.asarray(arr)
+    src_arr_ids = nxp.asarray(src_arr_ids)
+    src_offsets = nxp.asarray(src_offsets)
 
     return Array(arr, src_arr_ids, src_offsets)

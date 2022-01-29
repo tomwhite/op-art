@@ -378,6 +378,29 @@ def test_add_ones():
     )
 
 
+def test_add_ones_array():
+    opart.reset_ids()
+
+    a = xp.ones((1, 2))
+
+    b = xp.ones((1, 2))
+
+    c = a + b
+
+    print(c)
+
+    assert_array_equal(c.arr, np.add(np.ones((1, 2)), np.ones((1, 2))))
+    assert c.representation.ndim == 2
+    assert c.representation.shape == (1, 2)
+    assert len(c.representation.cells) == 2
+
+    assert asdict(c.representation.cells[0]) == dict(
+        id="2_0", index=(0, 0), value=2, sources=["0_0", "1_0"]
+    )
+    assert asdict(c.representation.cells[1]) == dict(
+        id="2_1", index=(0, 1), value=2, sources=["0_1", "1_1"]
+    )
+
 def test_add_ones_broadcast():
     opart.reset_ids()
 
@@ -515,7 +538,7 @@ def test_sum_keepdims():
 def test_mean():
     opart.reset_ids()
 
-    a = xp.arange(6)
+    a = xp.arange(6, dtype=xp.float32)
     a = xp.reshape(a, (3, 2))
 
     b = xp.mean(a, axis=0)
@@ -538,6 +561,8 @@ def test_argsort():
 
     a = xp.asarray([5, 1, 0, 3, 2, 4])
     b = xp.argsort(a)
+
+    print(b)
 
     assert len(b.representation.cells) == 6
     assert asdict(b.representation.cells[0]) == dict(

@@ -9,7 +9,8 @@ from ._array_object import Array, _structural_operation
 def astype(x, dtype, /, *, copy=True):
     if not copy and dtype == x.dtype:
         return x
-    arr = x.arr.astype(dtype=dtype, copy=copy)
+    xp = x.arr.__array_namespace__()
+    arr = xp.astype(x.arr, dtype, copy=copy)
     return Array(arr, x.arr_ids, x.offsets)
 
 def broadcast_arrays(*arrays):
@@ -22,12 +23,13 @@ def broadcast_arrays(*arrays):
     return [broadcast_to(array, shape) for array in arrays]
 
 def broadcast_to(x, /, shape):
-    return _structural_operation(x, np.broadcast_to, shape)
+    xp = x.arr.__array_namespace__()
+    return _structural_operation(x, xp.broadcast_to, shape)
 
 def can_cast(from_, to, /):
     if isinstance(from_, Array):
         from_ = from_.arr
-    return np.can_cast(from_, to)
+    return nxp.can_cast(from_, to)
 
 def finfo(type, /):
     # Use numpy.array_api since there is nothing op_art specific

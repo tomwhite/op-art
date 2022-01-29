@@ -4,6 +4,7 @@ import builtins
 import itertools
 import json
 import numpy as np
+import numpy.array_api as nxp
 
 from ._dtypes import _boolean_dtypes, _floating_dtypes
 
@@ -19,13 +20,16 @@ def reset_ids():
 
 class Array:
     def __init__(self, arr, src_arr_ids=None, src_offsets=None, *, id=None):
+        if isinstance(arr, np.ndarray):
+            raise ValueError("can't be ndarray")
         if isinstance(arr, np.generic):
             # Convert the array scalar to a 0-D array
             arr = np.asarray(arr)
         self.arr = arr
         self.id = id if id is not None else next(id_gen)
-        self.arr_ids = np.broadcast_to(np.array(self.id, dtype=np.int32), self.arr.shape)
-        self.offsets = np.arange(0, arr.size, dtype=np.int32).reshape(arr.shape)
+        self.arr_ids = nxp.broadcast_to(nxp.asarray(self.id, dtype=nxp.int32), self.arr.shape)
+        self.offsets = nxp.arange(0, arr.size, dtype=nxp.int32)
+        self.offsets = nxp.reshape(self.offsets, arr.shape)
         self.src_arr_ids = src_arr_ids
         self.src_offsets = src_offsets
         self.representation = Array._get_representation(self.arr, self.id, self.offsets, src_arr_ids, src_offsets)
@@ -34,7 +38,7 @@ class Array:
   
     @property
     def device(self):
-        return "cpu"
+        return self.arr.device
 
     @property
     def dtype(self):
@@ -68,11 +72,7 @@ class Array:
 
 
     def to_device(self, device, /, stream=None):
-        if stream is not None:
-            raise ValueError("The stream argument to to_device() is not supported")
-        if device == "cpu":
-            return self
-        raise ValueError(f"Unsupported device {device!r}")
+        return self.arr.to_device(device, stream)
 
     # Based on https://github.com/data-apis/numpy/blob/array-api/numpy/_array_api/_array_object.py
     # Helper function to match the type promotion rules in the spec
@@ -89,7 +89,7 @@ class Array:
         else:
             raise TypeError("'scalar' must be a Python scalar")
 
-        return Array(np.array(scalar, self.dtype))
+        return Array(nxp.asarray(scalar, dtype=self.dtype))
 
     def __getitem__(self, item):
         if isinstance(item, Array): # boolean array
@@ -113,31 +113,39 @@ class Array:
             self.src_arr_ids = np.full_like(self.arr, -1, dtype=np.int32)
             self.src_offsets = np.full_like(self.arr, -1, dtype=np.int32)
 
-        if value.arr_ids.shape != self.src_arr_ids[item].shape:
+        if self.offsets.ndim == self.src_arr_ids.ndim:
+            src_item = item
+        else:
+            src_item = item + (Ellipsis,)
+        if value.arr_ids.shape != self.src_arr_ids[src_item].shape:
             # there are more sources in self than value, so expand value arrays to match
-            value_arr_ids = np.full_like(self.src_arr_ids[item], -1, dtype=np.int32)
-            value_offsets = np.full_like(self.src_offsets[item], -1, dtype=np.int32)
+            value_arr_ids = np.full_like(self.src_arr_ids[src_item], -1, dtype=np.int32)
+            value_offsets = np.full_like(self.src_offsets[src_item], -1, dtype=np.int32)
             value_arr_ids[..., 0] = value.arr_ids
             value_offsets[..., 0] = value.offsets
-            self.src_arr_ids[item] = value_arr_ids
-            self.src_offsets[item] = value_offsets
+            self.src_arr_ids[src_item] = value_arr_ids
+            self.src_offsets[src_item] = value_offsets
         else:
-            self.src_arr_ids[item] = value.arr_ids
-            self.src_offsets[item] = value.offsets
+            self.src_arr_ids[src_item] = value.arr_ids
+            self.src_offsets[src_item] = value.offsets
         self.representation = Array._get_representation(self.arr, self.id, self.offsets, self.src_arr_ids, self.src_offsets)
 
     def __abs__(self, /):
-        return _elementwise_unary_operation(self, np.abs)
+        return Array(self.arr.__abs__(), self.arr_ids, self.offsets)
 
     def __add__(self, other, /):
         if isinstance(other, (int, float, bool)):
             other = self._promote_scalar(other)
-        return _elementwise_binary_operation(self, other, np.add)
+        # Let the underlying arr lib do the calculation - and just do the
+        # source updates in _elementwise_binary_operation2
+        arr = self.arr.__add__(other.arr)
+        return _elementwise_binary_operation2(self, other, arr)
 
     def __and__(self, other, /):
         if isinstance(other, (int, float, bool)):
             other = self._promote_scalar(other)
-        return _elementwise_binary_operation(self, other, np.logical_and)
+        arr = self.arr.__and__(other.arr)
+        return _elementwise_binary_operation2(self, other, arr)
 
     def __array_namespace__(self, /, *, api_version=None):
         if api_version is not None and not api_version.startswith("2021."):
@@ -159,8 +167,8 @@ class Array:
     def __eq__(self, other, /):
         if isinstance(other, (int, float, bool)):
             other = self._promote_scalar(other)
-
-        return _elementwise_binary_operation(self, other, np.equal)
+        arr = self.arr.__eq__(other.arr)
+        return _elementwise_binary_operation2(self, other, arr)
 
     def __float__(self, /):
         if self.shape != ():
@@ -170,17 +178,20 @@ class Array:
     def __floordiv__(self, other, /):
         if isinstance(other, (int, float, bool)):
             other = self._promote_scalar(other)
-        return _elementwise_binary_operation(self, other, np.floor_divide)
+        arr = self.arr.__floordiv__(other.arr)
+        return _elementwise_binary_operation2(self, other, arr)
 
     def __ge__(self, other, /):
         if isinstance(other, (int, float, bool)):
             other = self._promote_scalar(other)
-        return _elementwise_binary_operation(self, other, np.greater_equal)
+        arr = self.arr.__ge__(other.arr)
+        return _elementwise_binary_operation2(self, other, arr)
 
     def __gt__(self, other, /):
         if isinstance(other, (int, float, bool)):
             other = self._promote_scalar(other)
-        return _elementwise_binary_operation(self, other, np.greater)
+        arr = self.arr.__gt__(other.arr)
+        return _elementwise_binary_operation2(self, other, arr)
 
     def __int__(self, /):
         if self.shape != ():
@@ -191,22 +202,25 @@ class Array:
         return self.arr.__index__()
 
     def __invert__(self, /):
-        return _elementwise_unary_operation(self, np.invert)
+        return Array(self.arr.__invert__(), self.arr_ids, self.offsets)
 
     def __le__(self, other, /):
         if isinstance(other, (int, float, bool)):
             other = self._promote_scalar(other)
-        return _elementwise_binary_operation(self, other, np.less_equal)
+        arr = self.arr.__le__(other.arr)
+        return _elementwise_binary_operation2(self, other, arr)
 
     def __lshift__(self, other, /):
         if isinstance(other, (int, float, bool)):
             other = self._promote_scalar(other)
-        return _elementwise_binary_operation(self, other, np.left_shift)
+        arr = self.arr.__lshift__(other.arr)
+        return _elementwise_binary_operation2(self, other, arr)
 
     def __lt__(self, other, /):
         if isinstance(other, (int, float, bool)):
             other = self._promote_scalar(other)
-        return _elementwise_binary_operation(self, other, np.less)
+        arr = self.arr.__lt__(other.arr)
+        return _elementwise_binary_operation2(self, other, arr)
 
     def __matmul__(self, other, /):
         if isinstance(other, (int, float, bool)):
@@ -217,81 +231,94 @@ class Array:
     def __mod__(self, other, /):
         if isinstance(other, (int, float, bool)):
             other = self._promote_scalar(other)
-        return _elementwise_binary_operation(self, other, np.floor_divide)
+        arr = self.arr.__mod__(other.arr)
+        return _elementwise_binary_operation2(self, other, arr)
 
     def __mul__(self, other, /):
         if isinstance(other, (int, float, bool)):
             other = self._promote_scalar(other)
-        return _elementwise_binary_operation(self, other, np.multiply)
+        arr = self.arr.__mul__(other.arr)
+        return _elementwise_binary_operation2(self, other, arr)
 
     def __ne__(self, other, /):
         if isinstance(other, (int, float, bool)):
             other = self._promote_scalar(other)
-        return _elementwise_binary_operation(self, other, np.not_equal)
+        arr = self.arr.__ne__(other.arr)
+        return _elementwise_binary_operation2(self, other, arr)
 
     def __neg__(self, /):
-        return _elementwise_unary_operation(self, np.negative)
+        return Array(self.arr.__neg__(), self.arr_ids, self.offsets)
 
     def __or__(self, other, /):
         if isinstance(other, (int, float, bool)):
             other = self._promote_scalar(other)
-        return _elementwise_binary_operation(self, other, np.logical_or)
+        arr = self.arr.__or__(other.arr)
+        return _elementwise_binary_operation2(self, other, arr)
 
     def __pos__(self, /):
-        return _elementwise_unary_operation(self, np.positive)
+        return Array(self.arr.__pos__(), self.arr_ids, self.offsets)
 
     def __pow__(self, other, /):
         if isinstance(other, (int, float, bool)):
             other = self._promote_scalar(other)
-        return _elementwise_binary_operation(self, other, np.power)
+        arr = self.arr.__pow__(other.arr)
+        return _elementwise_binary_operation2(self, other, arr)
 
     def __rshift__(self, other, /):
         if isinstance(other, (int, float, bool)):
             other = self._promote_scalar(other)
-        return _elementwise_binary_operation(self, other, np.right_shift)
+        arr = self.arr.__rshift__(other.arr)
+        return _elementwise_binary_operation2(self, other, arr)
 
     def __sub__(self, other, /):
         if isinstance(other, (int, float, bool)):
             other = self._promote_scalar(other)
-        return _elementwise_binary_operation(self, other, np.subtract)
+        arr = self.arr.__sub__(other.arr)
+        return _elementwise_binary_operation2(self, other, arr)
 
     def __truediv__(self, other, /):
         if isinstance(other, (int, float, bool)):
             other = self._promote_scalar(other)
-        return _elementwise_binary_operation(self, other, np.divide)
+        arr = self.arr.__truediv__(other.arr)
+        return _elementwise_binary_operation2(self, other, arr)
 
     def __xor__(self, other, /):
         if isinstance(other, (int, float, bool)):
             other = self._promote_scalar(other)
-        return _elementwise_binary_operation(self, other, np.logical_xor)
+        arr = self.arr.__xor__(other.arr)
+        return _elementwise_binary_operation2(self, other, arr)
 
     # TODO: __iadd__
 
     def __radd__(self, other, /):
         if isinstance(other, (int, float, bool)):
             other = self._promote_scalar(other)
-        return _elementwise_binary_operation(other, self, np.add)
+        arr = self.arr.__radd__(other.arr)
+        return _elementwise_binary_operation2(other, self, arr)
 
     # TODO: __iand__
 
     def __rand__(self, other, /):
         if isinstance(other, (int, float, bool)):
             other = self._promote_scalar(other)
-        return _elementwise_binary_operation(other, self, np.logical_and)
+        arr = self.arr.__rand__(other.arr)
+        return _elementwise_binary_operation2(other, self, arr)
 
     # TODO: __ifloordiv__
 
     def __rfloordiv__(self, other, /):
         if isinstance(other, (int, float, bool)):
             other = self._promote_scalar(other)
-        return _elementwise_binary_operation(other, self, np.floor_divide)
+        arr = self.arr.__rfloordiv__(other.arr)
+        return _elementwise_binary_operation2(other, self, arr)
 
     # TODO: __ilshift__
 
     def __rlshift__(self, other, /):
         if isinstance(other, (int, float, bool)):
             other = self._promote_scalar(other)
-        return _elementwise_binary_operation(other, self, np.left_shift)
+        arr = self.arr.__rlshift__(other.arr)
+        return _elementwise_binary_operation2(other, self, arr)
 
     # TODO: __imatmul__
 
@@ -306,56 +333,72 @@ class Array:
     def __rmod__(self, other, /):
         if isinstance(other, (int, float, bool)):
             other = self._promote_scalar(other)
-        return _elementwise_binary_operation(other, self, np.floor_divide)
+        arr = self.arr.__rmod__(other.arr)
+        return _elementwise_binary_operation2(other, self, arr)
+
 
     # TODO: __imul__
 
     def __rmul__(self, other, /):
         if isinstance(other, (int, float, bool)):
             other = self._promote_scalar(other)
-        return _elementwise_binary_operation(other, self, np.multiply)
+        arr = self.arr.__rmul__(other.arr)
+        return _elementwise_binary_operation2(other, self, arr)
+
 
     # TODO: __ior__
 
     def __ror__(self, other, /):
         if isinstance(other, (int, float, bool)):
             other = self._promote_scalar(other)
-        return _elementwise_binary_operation(other, self, np.logical_or)
+        arr = self.arr.__ror__(other.arr)
+        return _elementwise_binary_operation2(other, self, arr)
+
 
     # TODO: __ipow__
 
     def __rpow__(self, other, /):
         if isinstance(other, (int, float, bool)):
             other = self._promote_scalar(other)
-        return _elementwise_binary_operation(other, self, np.power)
+        arr = self.arr.__rpow__(other.arr)
+        return _elementwise_binary_operation2(other, self, arr)
+
 
     # TODO: __irshift__
 
     def __rrshift__(self, other, /):
         if isinstance(other, (int, float, bool)):
             other = self._promote_scalar(other)
-        return _elementwise_binary_operation(other, self, np.right_shift)
+        arr = self.arr.__rrshift__(other.arr)
+        return _elementwise_binary_operation2(other, self, arr)
+
 
     # TODO: __isub__
 
     def __rsub__(self, other, /):
         if isinstance(other, (int, float, bool)):
             other = self._promote_scalar(other)
-        return _elementwise_binary_operation(other, self, np.subtract)
+        arr = self.arr.__rsub__(other.arr)
+        return _elementwise_binary_operation2(other, self, arr)
+
 
     # TODO: __itruediv__
 
     def __rtruediv__(self, other, /):
         if isinstance(other, (int, float, bool)):
             other = self._promote_scalar(other)
-        return _elementwise_binary_operation(other, self, np.divide)
+        arr = self.arr.__rtruediv__(other.arr)
+        return _elementwise_binary_operation2(other, self, arr)
+
 
     # TODO: __ixor__
 
     def __rxor__(self, other, /):
         if isinstance(other, (int, float, bool)):
             other = self._promote_scalar(other)
-        return _elementwise_binary_operation(other, self, np.logical_xor)
+        arr = self.arr.__rxor__(other.arr)
+        return _elementwise_binary_operation2(other, self, arr)
+
 
     @staticmethod
     def _get_representation(arr, id, offsets, src_arr_ids, src_offsets):
@@ -363,23 +406,28 @@ class Array:
         cells = []
         it = np.nditer(arr, flags=["multi_index", "refs_ok", "zerosize_ok"], order="C")
         for x in it:
-            offset = offsets[it.multi_index]
+            ind = it.multi_index
+            offset = offsets[ind]
             cell_id = f"{id}_{offset}"
             if src_arr_ids is None:
                 cell_sources = None
             else:
-                src_arr_id = src_arr_ids[it.multi_index]
-                if np.isscalar(src_arr_id):
+                if offsets.ndim == src_arr_ids.ndim:
+                    src_ind = ind
+                else:
+                    src_ind = ind + (Ellipsis,)
+                src_arr_id = src_arr_ids[src_ind]
+                if src_arr_id.ndim == 0:
                     if src_arr_id == -1:
                         cell_sources = None
                     else:
-                        src_offset = src_offsets[it.multi_index]
+                        src_offset = src_offsets[src_ind]
                         cell_sources = [f"{src_arr_id}_{src_offset}"]
                 else:
-                    if np.all(src_arr_id == -1):
+                    if nxp.all(src_arr_id == -1):
                         cell_sources = None
                     else:
-                        src_offset = src_offsets[it.multi_index]
+                        src_offset = src_offsets[src_ind]
                         cell_sources = [f"{i}_{o}" for i, o in zip(src_arr_id, src_offset) if i != -1]
             cells.append(CellRepresentation(cell_id, it.multi_index, x.item(), cell_sources))
         return ArrayRepresentation(id, arr.dtype.kind, arr.ndim, arr.shape, tuple(cells))
@@ -448,15 +496,24 @@ def _normalize_two_args(x1, x2):
     return (x1, x2)
 
 def _elementwise_binary_operation(x1, x2, array_op):
-    x1, x2 = _normalize_two_args(x1, x2)
+    #x1, x2 = _normalize_two_args(x1, x2)
     arr = array_op(x1.arr, x2.arr)
 
     # broadcast if necessary
     from ._data_type_functions import broadcast_arrays
     x1_broad, x2_broad = broadcast_arrays(x1, x2)
 
-    src_arr_ids = np.stack([x1_broad.arr_ids, x2_broad.arr_ids], axis=-1)
-    src_offsets = np.stack([x1_broad.offsets, x2_broad.offsets], axis=-1)
+    src_arr_ids = nxp.stack([x1_broad.arr_ids, x2_broad.arr_ids], axis=-1)
+    src_offsets = nxp.stack([x1_broad.offsets, x2_broad.offsets], axis=-1)
+
+    return Array(arr, src_arr_ids, src_offsets)
+
+def _elementwise_binary_operation2(x1, x2, arr):
+    x1_arr_ids, x2_arr_ids = nxp.broadcast_arrays(x1.arr_ids, x2.arr_ids)
+    x1_offsets, x2_offsets = nxp.broadcast_arrays(x1.offsets, x2.offsets)
+
+    src_arr_ids = nxp.stack([x1_arr_ids, x2_arr_ids], axis=-1)
+    src_offsets = nxp.stack([x1_offsets, x2_offsets], axis=-1)
 
     return Array(arr, src_arr_ids, src_offsets)
 
@@ -468,7 +525,9 @@ def _structural_operation(x, array_op, *args, **kwargs):
     return Array(arr, src_arr_ids, src_offsets)
 
 def _reduction_operation(x, axis, array_op, keepdims=False, **kwargs):
-    arr = array_op(x.arr, axis, **kwargs)
+    xp = x.arr.__array_namespace__()
+
+    arr = array_op(x.arr, axis=axis, **kwargs)
 
     def normalize_axis(arr, a):
         # convert negative axis a to be >= 0
@@ -476,8 +535,8 @@ def _reduction_operation(x, axis, array_op, keepdims=False, **kwargs):
 
     # note that axis can be None, a single int, or a tuple of ints
     if axis is None:
-        src_arr_ids = x.arr_ids.ravel()
-        src_offsets = x.offsets.ravel()
+        src_arr_ids = xp.reshape(x.arr_ids, -1)
+        src_offsets = xp.reshape(x.offsets, -1)
     elif isinstance(axis, int):
         # reduction in axis is equivalent to permuting the source arrays, so the
         # axis being reduced becomes the last one
@@ -486,7 +545,7 @@ def _reduction_operation(x, axis, array_op, keepdims=False, **kwargs):
             axes = list(range(arr.ndim))
             del axes[axis]
             axes.append(axis)
-            return np.transpose(arr, axes)
+            return xp.permute_dims(arr, axes)
         src_arr_ids = move_axis_to_end(x.arr_ids, axis)
         src_offsets = move_axis_to_end(x.offsets, axis)
     else:
@@ -496,10 +555,10 @@ def _reduction_operation(x, axis, array_op, keepdims=False, **kwargs):
             axes = list(range(arr.ndim))
             axes = [a for a in axes if a not in axis]
             axes.extend(axis)
-            res = np.transpose(arr, axes)
+            res = xp.permute_dims(arr, axes)
 
             shape = tuple([arr.shape[a] for a in axes if a not in axis]) + (-1,)
-            return res.reshape(shape)
+            return xp.reshape(res, shape)
 
         src_arr_ids = move_axis_to_end(x.arr_ids, axis)
         src_offsets = move_axis_to_end(x.offsets, axis)
@@ -508,8 +567,8 @@ def _reduction_operation(x, axis, array_op, keepdims=False, **kwargs):
     if keepdims and x.ndim > 0:
         if axis is None:
             axis = tuple(range(x.ndim))
-        arr = np.expand_dims(arr, axis)
-        src_arr_ids = np.expand_dims(src_arr_ids, axis)
-        src_offsets = np.expand_dims(src_offsets, axis)
+        arr = xp.expand_dims(arr, axis=axis)
+        src_arr_ids = xp.expand_dims(src_arr_ids, axis=axis)
+        src_offsets = xp.expand_dims(src_offsets, axis=axis)
 
     return Array(arr, src_arr_ids, src_offsets)
