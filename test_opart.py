@@ -2,6 +2,7 @@ from dataclasses import asdict
 
 import numpy as np
 import op_art as opart
+import op_art as xp
 import pytest
 from numpy.testing import assert_array_equal
 
@@ -9,8 +10,8 @@ from numpy.testing import assert_array_equal
 def test_rewrite_representation():
     opart.reset_ids()
 
-    a = opart.arange(6)
-    b = opart.reshape(a, (3, 2))
+    a = xp.arange(6)
+    b = xp.reshape(a, (3, 2))
 
     from op_art._visualization import rewrite_representation
 
@@ -29,13 +30,13 @@ def test_4d_not_supported():
     opart.reset_ids()
 
     with pytest.raises(NotImplementedError):
-        opart.ones((2, 2, 2, 2))
+        xp.ones((2, 2, 2, 2))
 
 
 def test_arange():
     opart.reset_ids()
 
-    a = opart.arange(6)
+    a = xp.arange(6)
 
     assert_array_equal(a.arr, np.arange(6))
     assert a.representation.ndim == 1
@@ -49,7 +50,7 @@ def test_arange():
 def test_ones():
     opart.reset_ids()
 
-    a = opart.ones((1, 2))
+    a = xp.ones((1, 2))
 
     assert_array_equal(a.arr, np.ones((1, 2)))
     assert len(a.representation.cells) == 2
@@ -60,9 +61,9 @@ def test_ones():
 def test_meshgrid():
     opart.reset_ids()
 
-    a = opart.asarray([1, 2, 3, 4])
-    b = opart.asarray([5, 6, 7])
-    c, d = opart.meshgrid(a, b)
+    a = xp.asarray([1, 2, 3, 4])
+    b = xp.asarray([5, 6, 7])
+    c, d = xp.meshgrid(a, b)
 
     assert_array_equal(c.arr, np.meshgrid(a.arr, b.arr)[0])
     assert_array_equal(d.arr, np.meshgrid(a.arr, b.arr)[1])
@@ -94,8 +95,8 @@ def test_meshgrid():
 def test_tril():
     opart.reset_ids()
 
-    a = opart.asarray([[1, 2, 3], [4, 5, 6], [7, 8, 9]])
-    b = opart.tril(a)
+    a = xp.asarray([[1, 2, 3], [4, 5, 6], [7, 8, 9]])
+    b = xp.tril(a)
 
     assert b.representation.ndim == 2
     assert b.representation.shape == (3, 3)
@@ -112,8 +113,8 @@ def test_tril():
 def test_triu():
     opart.reset_ids()
 
-    a = opart.asarray([[1, 2, 3], [4, 5, 6], [7, 8, 9]])
-    b = opart.triu(a)
+    a = xp.asarray([[1, 2, 3], [4, 5, 6], [7, 8, 9]])
+    b = xp.triu(a)
 
     assert b.representation.ndim == 2
     assert b.representation.shape == (3, 3)
@@ -130,9 +131,9 @@ def test_triu():
 def test_tril_3d():
     opart.reset_ids()
 
-    a = opart.arange(1, 19)
-    a = opart.reshape(a, (2, 3, 3))
-    b = opart.tril(a)
+    a = xp.arange(1, 19)
+    a = xp.reshape(a, (2, 3, 3))
+    b = xp.tril(a)
 
     assert_array_equal(b.arr, np.tril(np.arange(1, 19).reshape(2, 3, 3)))
 
@@ -151,7 +152,7 @@ def test_tril_3d():
 def test_single_axis_indexing():
     opart.reset_ids()
 
-    a = opart.arange(6)
+    a = xp.arange(6)
     b = a[1:3]
 
     assert_array_equal(b.arr, np.arange(6)[1:3])
@@ -162,8 +163,8 @@ def test_single_axis_indexing():
 def test_boolean_indexing():
     opart.reset_ids()
 
-    a = opart.arange(6)
-    b = opart.asarray([True, False, True, False, True, False])
+    a = xp.arange(6)
+    b = xp.asarray([True, False, True, False, True, False])
     c = a[b]
 
     assert_array_equal(c.arr, a.arr[b.arr])
@@ -177,9 +178,9 @@ def test_boolean_indexing():
 def test_reshape_and_index():
     opart.reset_ids()
 
-    a = opart.arange(6)
+    a = xp.arange(6)
 
-    b = opart.reshape(a, (3, 2))
+    b = xp.reshape(a, (3, 2))
 
     assert_array_equal(b.arr, np.arange(6).reshape((3, 2)))
     assert b.representation.ndim == 2
@@ -205,16 +206,16 @@ def test_reshape_and_index():
 def test_reshape_after_flip():
     opart.reset_ids()
 
-    a = opart.arange(6)
-    b = opart.reshape(a, (3, 2))
+    a = xp.arange(6)
+    b = xp.reshape(a, (3, 2))
 
-    c = opart.flip(b, axis=0)
+    c = xp.flip(b, axis=0)
 
     assert asdict(c.representation.cells[1]) == dict(
         id="2_8", index=(0, 1), value=5, sources=["1_40"]
     )
 
-    d = opart.reshape(c, 6)
+    d = xp.reshape(c, 6)
 
     assert asdict(d.representation.cells[1]) == dict(
         id="3_8", index=(1,), value=5, sources=["2_8"]
@@ -223,9 +224,9 @@ def test_reshape_after_flip():
 def test_setitem():
     opart.reset_ids()
 
-    a = opart.arange(3)
+    a = xp.arange(3)
 
-    b = opart.ones((3, 2))
+    b = xp.ones((3, 2))
 
     b[:, 1] = a
 
@@ -242,13 +243,13 @@ def test_setitem():
 def test_setitem_multiple_sources():
     opart.reset_ids()
 
-    a = opart.ones((3, 2))
+    a = xp.ones((3, 2))
 
-    b = opart.ones((3, 2))
+    b = xp.ones((3, 2))
 
-    c = opart.add(a, b)
+    c = xp.add(a, b)
 
-    d = opart.arange(3)
+    d = xp.arange(3)
 
     c[:, 1] = d
 
@@ -268,9 +269,9 @@ def test_setitem_multiple_sources():
 def test_concat():
     opart.reset_ids()
 
-    a = opart.asarray([[1, 2], [3, 4]])
-    b = opart.asarray([[5], [6]])
-    c = opart.concat((a, b), axis=1)
+    a = xp.asarray([[1, 2], [3, 4]])
+    b = xp.asarray([[5], [6]])
+    c = xp.concat((a, b), axis=1)
 
     assert_array_equal(c.arr, np.concatenate((np.array([[1, 2], [3, 4]]), np.array([[5], [6]])), axis=1))
 
@@ -281,9 +282,9 @@ def test_concat():
 def test_concat_no_axis():
     opart.reset_ids()
 
-    a = opart.asarray([[1, 2], [3, 4]])
-    b = opart.asarray([[5], [6]])
-    c = opart.concat((a, b), axis=None)
+    a = xp.asarray([[1, 2], [3, 4]])
+    b = xp.asarray([[5], [6]])
+    c = xp.concat((a, b), axis=None)
 
     assert_array_equal(c.arr, np.concatenate((np.array([[1, 2], [3, 4]]), np.array([[5], [6]])), axis=None))
 
@@ -294,39 +295,39 @@ def test_concat_no_axis():
 def test_flip():
     opart.reset_ids()
 
-    a = opart.arange(6)
+    a = xp.arange(6)
 
-    b = opart.reshape(a, (3, 2))
+    b = xp.reshape(a, (3, 2))
 
-    c = opart.flip(b, axis=0)
+    c = xp.flip(b, axis=0)
 
     assert_array_equal(c.arr, np.flip(np.arange(6).reshape((3, 2)), 0))
     assert c.representation.ndim == 2
     assert c.representation.shape == (3, 2)
     assert len(c.representation.cells) == 6
 
-    assert asdict([cell for cell in c.representation.cells if cell.index == (0, 0)][0]) == dict(
+    assert asdict(c.representation.cells[0]) == dict(
         id="2_0", index=(0, 0), value=4, sources=["1_32"]
     )
 
 def test_roll():
     opart.reset_ids()
 
-    a = opart.arange(6)
+    a = xp.arange(6)
 
-    b = opart.roll(a, 2)
+    b = xp.roll(a, 2)
 
     assert_array_equal(b.arr, np.roll(np.arange(6), 2))
-    assert asdict([cell for cell in b.representation.cells if cell.index == (0,)][0]) == dict(
+    assert asdict(b.representation.cells[0]) == dict(
         id="1_0", index=(0,), value=4, sources=["0_32"]
     )
 
 def test_stack():
     opart.reset_ids()
 
-    a = opart.asarray([1, 2, 3])
-    b = opart.asarray([2, 3, 4])
-    c = opart.stack((a, b))
+    a = xp.asarray([1, 2, 3])
+    b = xp.asarray([2, 3, 4])
+    c = xp.stack((a, b))
 
     assert_array_equal(c.arr, np.stack((np.array([1, 2, 3]), np.array([2, 3, 4]))))
 
@@ -337,9 +338,9 @@ def test_stack():
 def test_transpose_attr():
     opart.reset_ids()
 
-    a = opart.arange(6)
+    a = xp.arange(6)
 
-    b = opart.reshape(a, (3, 2))
+    b = xp.reshape(a, (3, 2))
 
     c = b.T
 
@@ -358,11 +359,11 @@ def test_transpose_attr():
 def test_add_ones():
     opart.reset_ids()
 
-    a = opart.ones((1, 2))
+    a = xp.ones((1, 2))
 
-    b = opart.ones((1, 2))
+    b = xp.ones((1, 2))
 
-    c = opart.add(a, b)
+    c = xp.add(a, b)
 
     assert_array_equal(c.arr, np.add(np.ones((1, 2)), np.ones((1, 2))))
     assert c.representation.ndim == 2
@@ -380,11 +381,11 @@ def test_add_ones():
 def test_add_ones_broadcast():
     opart.reset_ids()
 
-    a = opart.ones((1, 2))
+    a = xp.ones((1, 2))
 
-    b = opart.ones((1,))
+    b = xp.ones((1,))
 
-    c = opart.add(a, b)
+    c = xp.add(a, b)
 
     assert_array_equal(c.arr, np.add(np.ones((1, 2)), np.ones((1,))))
     assert c.representation.ndim == 2
@@ -402,9 +403,9 @@ def test_add_ones_broadcast():
 def test_broadcast_to():
     opart.reset_ids()
 
-    a = opart.ones((1,))
+    a = xp.ones((1,))
 
-    b = opart.broadcast_to(a, (1, 2))
+    b = xp.broadcast_to(a, (1, 2))
 
     assert_array_equal(b.arr, np.broadcast_to(a.arr, (1, 2)))
     assert b.representation.ndim == 2
@@ -422,9 +423,9 @@ def test_broadcast_to():
 def test_negative():
     opart.reset_ids()
 
-    a = opart.arange(6)
+    a = xp.arange(6)
 
-    b = opart.negative(a)
+    b = xp.negative(a)
 
     assert_array_equal(b.arr, np.negative(np.arange(6)))
     assert b.representation.ndim == 1
@@ -443,10 +444,10 @@ def test_sum_no_axis():
     print(np.arange(6).reshape((3, 2)).sum())
     opart.reset_ids()
 
-    a = opart.arange(6)
-    a = opart.reshape(a, (3, 2))
+    a = xp.arange(6)
+    a = xp.reshape(a, (3, 2))
 
-    b = opart.sum(a)
+    b = xp.sum(a)
 
     assert_array_equal(b.arr, np.arange(6).reshape((3, 2)).sum())
     assert b.representation.ndim == 0
@@ -460,10 +461,10 @@ def test_sum_no_axis():
 def test_sum_single_axis():
     opart.reset_ids()
 
-    a = opart.arange(6)
-    a = opart.reshape(a, (3, 2))
+    a = xp.arange(6)
+    a = xp.reshape(a, (3, 2))
 
-    b = opart.sum(a, axis=0)
+    b = xp.sum(a, axis=0)
 
     assert_array_equal(b.arr, np.arange(6).reshape((3, 2)).sum(axis=0))
     assert b.representation.ndim == 1
@@ -480,10 +481,10 @@ def test_sum_single_axis():
 def test_sum_multiple_axes():
     opart.reset_ids()
 
-    a = opart.arange(24)
-    a = opart.reshape(a, (3, 2, 4))
+    a = xp.arange(24)
+    a = xp.reshape(a, (3, 2, 4))
 
-    b = opart.sum(a, axis=(0, 2))
+    b = xp.sum(a, axis=(0, 2))
 
     assert_array_equal(b.arr, np.arange(24).reshape((3, 2, 4)).sum(axis=(0, 2)))
     assert b.representation.ndim == 1
@@ -493,10 +494,10 @@ def test_sum_multiple_axes():
 def test_sum_keepdims():
     opart.reset_ids()
 
-    a = opart.arange(6)
-    a = opart.reshape(a, (3, 2))
+    a = xp.arange(6)
+    a = xp.reshape(a, (3, 2))
 
-    b = opart.sum(a, axis=0, keepdims=True)
+    b = xp.sum(a, axis=0, keepdims=True)
 
     assert_array_equal(b.arr, np.arange(6).reshape((3, 2)).sum(axis=0, keepdims=True))
     assert b.representation.ndim == 2
@@ -514,10 +515,10 @@ def test_sum_keepdims():
 def test_mean():
     opart.reset_ids()
 
-    a = opart.arange(6)
-    a = opart.reshape(a, (3, 2))
+    a = xp.arange(6)
+    a = xp.reshape(a, (3, 2))
 
-    b = opart.mean(a, axis=0)
+    b = xp.mean(a, axis=0)
 
     assert_array_equal(b.arr, np.arange(6).reshape((3, 2)).mean(axis=0))
     assert b.representation.ndim == 1
@@ -535,8 +536,8 @@ def test_mean():
 def test_argsort():
     opart.reset_ids()
 
-    a = opart.asarray([5, 1, 0, 3, 2, 4])
-    b = opart.argsort(a)
+    a = xp.asarray([5, 1, 0, 3, 2, 4])
+    b = xp.argsort(a)
 
     assert len(b.representation.cells) == 6
     assert asdict(b.representation.cells[0]) == dict(
@@ -550,8 +551,8 @@ def test_argsort():
 def test_sort():
     opart.reset_ids()
 
-    a = opart.asarray([5, 1, 0, 3, 2, 4])
-    b = opart.sort(a)
+    a = xp.asarray([5, 1, 0, 3, 2, 4])
+    b = xp.sort(a)
 
     assert len(b.representation.cells) == 6
     assert asdict(b.representation.cells[0]) == dict(
@@ -565,8 +566,8 @@ def test_sort():
 def test_unique_values():
     opart.reset_ids()
 
-    a = opart.asarray([2, 2, 3, 5, 1, 1])
-    b = opart.unique_values(a)
+    a = xp.asarray([2, 2, 3, 5, 1, 1])
+    b = xp.unique_values(a)
 
     assert len(b.representation.cells) == 4
     assert asdict(b.representation.cells[0]) == dict(
@@ -582,8 +583,8 @@ def test_unique_values():
 def test_unique_counts():
     opart.reset_ids()
 
-    a = opart.asarray([2, 2, 3, 5, 1, 1])
-    b, c = opart.unique_counts(a)
+    a = xp.asarray([2, 2, 3, 5, 1, 1])
+    b, c = xp.unique_counts(a)
 
     assert len(b.representation.cells) == 4
     assert asdict(b.representation.cells[0]) == dict(
@@ -610,8 +611,8 @@ def test_unique_counts():
 def test_unique_inverse():
     opart.reset_ids()
 
-    a = opart.asarray([2, 2, 3, 5, 1, 1])
-    b, c = opart.unique_inverse(a)
+    a = xp.asarray([2, 2, 3, 5, 1, 1])
+    b, c = xp.unique_inverse(a)
 
     assert len(b.representation.cells) == 4
     assert asdict(b.representation.cells[0]) == dict(
@@ -638,8 +639,8 @@ def test_unique_inverse():
 def test_unique_all():
     opart.reset_ids()
 
-    a = opart.asarray([2, 2, 3, 5, 1, 1])
-    b, c, d, e = opart.unique_all(a)
+    a = xp.asarray([2, 2, 3, 5, 1, 1])
+    b, c, d, e = xp.unique_all(a)
 
     assert len(b.representation.cells) == 4
     assert len(c.representation.cells) == 4
@@ -659,9 +660,9 @@ def test_unique_all():
 def test_unique_2d():
     opart.reset_ids()
 
-    a = opart.asarray([2, 2, 3, 5, 1, 1])
-    a = opart.reshape(a, (2, 3))
-    b, c, d, e = opart.unique_all(a)
+    a = xp.asarray([2, 2, 3, 5, 1, 1])
+    a = xp.reshape(a, (2, 3))
+    b, c, d, e = xp.unique_all(a)
 
     assert len(b.representation.cells) == 4
     assert len(c.representation.cells) == 4
@@ -697,9 +698,9 @@ def test_unique_2d():
 def test_einsum():
     opart.reset_ids()
 
-    a = opart.asarray([[1, 2], [3, 4]])
-    b = opart.asarray([[1, 2], [3, 4]])
-    c = opart.einsum("ij,jk->ik", a, b)
+    a = xp.asarray([[1, 2], [3, 4]])
+    b = xp.asarray([[1, 2], [3, 4]])
+    c = xp.einsum("ij,jk->ik", a, b)
 
     assert c.shape == (2, 2)
     assert len(c.representation.cells) == 4
@@ -711,9 +712,9 @@ def test_einsum():
 def test_matmul():
     opart.reset_ids()
 
-    a = opart.asarray([[0, 1, 2], [3, 4, 5]])
-    b = opart.asarray([[5, 1], [0, 3], [2, 4]])
-    c = opart.matmul(a, b)
+    a = xp.asarray([[0, 1, 2], [3, 4, 5]])
+    b = xp.asarray([[5, 1], [0, 3], [2, 4]])
+    c = xp.matmul(a, b)
 
     assert c.shape == (2, 2)
     assert len(c.representation.cells) == 4
@@ -725,11 +726,11 @@ def test_matmul():
 def test_tensordot():
     opart.reset_ids()
 
-    a = opart.arange(60)
-    a = opart.reshape(a, (3, 4, 5))
-    b = opart.arange(24)
-    b = opart.reshape(b, (4, 3, 2))
-    c = opart.tensordot(a, b, axes=([1, 0], [0, 1]))
+    a = xp.arange(60)
+    a = xp.reshape(a, (3, 4, 5))
+    b = xp.arange(24)
+    b = xp.reshape(b, (4, 3, 2))
+    c = xp.tensordot(a, b, axes=([1, 0], [0, 1]))
 
     a = np.arange(60).reshape(3,4,5)
     b = np.arange(24).reshape(4,3,2)
@@ -738,9 +739,9 @@ def test_tensordot():
 def test_matrix_transpose():
     opart.reset_ids()
 
-    a = opart.arange(6)
-    a = opart.reshape(a, (3, 2))
-    b = opart.matrix_transpose(a)
+    a = xp.arange(6)
+    a = xp.reshape(a, (3, 2))
+    b = xp.matrix_transpose(a)
 
     assert b.shape == (2, 3)
     assert asdict(b.representation.cells[0]) == dict(
@@ -757,10 +758,10 @@ def test_matrix_transpose():
 def test_argmax():
     opart.reset_ids()
 
-    a = opart.arange(6)
-    a = opart.reshape(a, (3, 2))
+    a = xp.arange(6)
+    a = xp.reshape(a, (3, 2))
 
-    b = opart.argmax(a, axis=0)
+    b = xp.argmax(a, axis=0)
 
     assert_array_equal(b.arr, np.arange(6).reshape((3, 2)).argmax(axis=0))
     assert b.representation.ndim == 1
@@ -777,8 +778,8 @@ def test_argmax():
 def test_nonzero():
     opart.reset_ids()
 
-    a = opart.asarray([[3, 0, 0], [0, 4, 0], [5, 6, 0]])
-    b, c = opart.nonzero(a)
+    a = xp.asarray([[3, 0, 0], [0, 4, 0], [5, 6, 0]])
+    b, c = xp.nonzero(a)
 
     assert b.representation.ndim == 1
     assert b.representation.shape == (4,)
@@ -801,10 +802,10 @@ def test_nonzero():
 def test_where():
     opart.reset_ids()
 
-    a = opart.asarray([True, False, True, True])
-    b = opart.asarray([1, 2, 3, 4])
-    c = opart.asarray([9, 8, 7, 6])
-    d = opart.where(a, b, c)
+    a = xp.asarray([True, False, True, True])
+    b = xp.asarray([1, 2, 3, 4])
+    c = xp.asarray([9, 8, 7, 6])
+    d = xp.where(a, b, c)
 
     assert d.representation.ndim == 1
     assert d.representation.shape == (4,)
