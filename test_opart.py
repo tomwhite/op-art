@@ -39,12 +39,10 @@ def test_arange():
     a = xp.arange(6)
 
     assert_array_equal(a.arr, np.arange(6))
-    assert a.representation.ndim == 1
-    assert a.representation.shape == (6,)
-    assert len(a.representation.cells) == 6
-    assert asdict(a.representation.cells[0]) == dict(
-        id="0_0", index=(0,), value=0, sources=None
-    )
+    assert np.all(a.arr_ids == 0)
+    assert_array_equal(a.offsets, [0, 1, 2, 3, 4, 5])
+    assert a.src_arr_ids == None
+    assert a.src_offsets == None
 
 
 def test_ones():
@@ -53,10 +51,10 @@ def test_ones():
     a = xp.ones((1, 2))
 
     assert_array_equal(a.arr, np.ones((1, 2)))
-    assert len(a.representation.cells) == 2
-    assert asdict(a.representation.cells[0]) == dict(
-        id="0_0", index=(0, 0), value=1.0, sources=None
-    )
+    assert np.all(a.arr_ids == 0)
+    assert_array_equal(a.offsets, [[0, 1]])
+    assert a.src_arr_ids == None
+    assert a.src_offsets == None
 
 def test_meshgrid():
     opart.reset_ids()
@@ -156,9 +154,10 @@ def test_single_axis_indexing():
     b = a[1:3]
 
     assert_array_equal(b.arr, np.arange(6)[1:3])
-    assert asdict(b.representation.cells[0]) == dict(
-        id="1_0", index=(0,), value=1, sources=["0_1"]
-    )
+    assert np.all(b.arr_ids == 1)
+    assert_array_equal(b.offsets, [0, 1])
+    assert_array_equal(b.src_arr_ids, [0, 0])
+    assert_array_equal(b.src_offsets, [1, 2])
 
 def test_boolean_indexing():
     opart.reset_ids()
@@ -168,12 +167,10 @@ def test_boolean_indexing():
     c = a[b]
 
     assert_array_equal(c.arr, a.arr[b.arr])
-    assert asdict(c.representation.cells[0]) == dict(
-        id="2_0", index=(0,), value=0, sources=["0_0"]
-    )
-    assert asdict(c.representation.cells[1]) == dict(
-        id="2_1", index=(1,), value=2, sources=["0_2"]
-    )
+    assert np.all(c.arr_ids == 2)
+    assert_array_equal(c.offsets, [0, 1, 2])
+    assert_array_equal(c.src_arr_ids, [0, 0, 0])
+    assert_array_equal(c.src_offsets, [0, 2, 4])
 
 def test_reshape_and_index():
     opart.reset_ids()
@@ -296,31 +293,21 @@ def test_flip():
     opart.reset_ids()
 
     a = xp.arange(6)
-
     b = xp.reshape(a, (3, 2))
-
     c = xp.flip(b, axis=0)
 
     assert_array_equal(c.arr, np.flip(np.arange(6).reshape((3, 2)), 0))
-    assert c.representation.ndim == 2
-    assert c.representation.shape == (3, 2)
-    assert len(c.representation.cells) == 6
-
-    assert asdict(c.representation.cells[0]) == dict(
-        id="2_0", index=(0, 0), value=4, sources=["1_4"]
-    )
+    assert_array_equal(c.src_arr_ids, [[1, 1], [1, 1], [1, 1]])
+    assert_array_equal(c.src_offsets, [[4, 5], [2, 3], [0, 1]])
 
 def test_roll():
     opart.reset_ids()
 
     a = xp.arange(6)
-
     b = xp.roll(a, 2)
 
     assert_array_equal(b.arr, np.roll(np.arange(6), 2))
-    assert asdict(b.representation.cells[0]) == dict(
-        id="1_0", index=(0,), value=4, sources=["0_4"]
-    )
+    assert_array_equal(b.src_offsets, [4, 5, 0, 1, 2, 3])
 
 def test_stack():
     opart.reset_ids()
@@ -339,9 +326,7 @@ def test_transpose_attr():
     opart.reset_ids()
 
     a = xp.arange(6)
-
     b = xp.reshape(a, (3, 2))
-
     c = b.T
 
     assert_array_equal(c.arr, np.arange(6).reshape((3, 2)).T)
