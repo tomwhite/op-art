@@ -50,9 +50,9 @@ A new array object is used to encapsulate the raw array data and metadata to tra
 Every array is an instance of `Array` (in the `op_art._array_object` namespace), which contains the underlying NumPy array, a unique ID, and four NumPy arrays used to track dependencies:
 
 - `arr_ids` - an array containing the ID in every position. It is the same shape as the main array.
-- `offsets` - an array containing the numerical offset of every cell in the main array. It is the same shape as the main array.
+- `offsets` - an array containing the offset of every cell in the main array (as a 1-D index). It is the same shape as the main array.
 - `src_arr_ids` - an array containing the IDs of the arrays that this cell depends on. It may be `None` if there are no dependencies (for the whole array), otherwise it is the same shape as the main array, possibly with an extra dimension (in the case that there are multiple sources). For example, if the main array has shape `(3, 4)` then `src_arr_ids` would be `(3, 4, 2)` if it has two sources.
-- `src_offsets` - an array containing the numerical offset of the cells that this cell depends on. It has the same shape as `src_arr_ids`.
+- `src_offsets` - an array containing the offsets of the cells that this cell depends on. It has the same shape as `src_arr_ids`.
 
 `Array` implements the contract defined in the [Array object array API](https://data-apis.org/array-api/latest/API_specification/array_object.html), which includes things like the `dtype` and `shape` attributes, and methods like `__add__` for adding two arrays together, or `__neg__` for returning an array where each element is the negative value.
 
@@ -78,11 +78,11 @@ ArrayRepresentation(
     shape=(6,),
     cells=(
         CellRepresentation(id='0_0', index=(0,), value=0, sources=None),
-        CellRepresentation(id='0_8', index=(1,), value=1, sources=None),
-        CellRepresentation(id='0_16', index=(2,), value=2, sources=None),
-        CellRepresentation(id='0_24', index=(3,), value=3, sources=None),
-        CellRepresentation(id='0_32', index=(4,), value=4, sources=None),
-        CellRepresentation(id='0_40', index=(5,), value=5, sources=None)
+        CellRepresentation(id='0_1', index=(1,), value=1, sources=None),
+        CellRepresentation(id='0_2', index=(2,), value=2, sources=None),
+        CellRepresentation(id='0_3', index=(3,), value=3, sources=None),
+        CellRepresentation(id='0_4', index=(4,), value=4, sources=None),
+        CellRepresentation(id='0_5', index=(5,), value=5, sources=None)
     )
 )
 ```
@@ -99,16 +99,16 @@ ArrayRepresentation(
     shape=(3, 2),
     cells=(
         CellRepresentation(id='1_0', index=(0, 0), value=0, sources=['0_0']),
-        CellRepresentation(id='1_8', index=(0, 1), value=1, sources=['0_8']),
-        CellRepresentation(id='1_16', index=(1, 0), value=2, sources=['0_16']),
-        CellRepresentation(id='1_24', index=(1, 1), value=3, sources=['0_24']),
-        CellRepresentation(id='1_32', index=(2, 0), value=4, sources=['0_32']),
-        CellRepresentation(id='1_40', index=(2, 1), value=5, sources=['0_40'])
+        CellRepresentation(id='1_1', index=(0, 1), value=1, sources=['0_1']),
+        CellRepresentation(id='1_2', index=(1, 0), value=2, sources=['0_2']),
+        CellRepresentation(id='1_3', index=(1, 1), value=3, sources=['0_3']),
+        CellRepresentation(id='1_4', index=(2, 0), value=4, sources=['0_4']),
+        CellRepresentation(id='1_5', index=(2, 1), value=5, sources=['0_5'])
     )
 )
 ```
 
-Now the `sources` show where each cell in the reshaped array has come from. For example, the (1, 0) cell comes from the (2,) cell in the original (ID `0_16`).
+Now the `sources` show where each cell in the reshaped array has come from. For example, the (1, 0) cell comes from the (2,) cell in the original (ID `0_2`).
 
 Populating the `sources` attribute for every operation in the API is a challenge, and is not something that in general can be extracted from existing array implementations. While some operations are very easy to implement (such as elementwise operations), some are more challenging (such as `matmul`) and essentially require writing from scratch.
 
