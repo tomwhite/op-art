@@ -387,8 +387,6 @@ def test_add_ones_array():
 
     c = a + b
 
-    print(c)
-
     assert_array_equal(c.arr, np.add(np.ones((1, 2)), np.ones((1, 2))))
     assert c.representation.ndim == 2
     assert c.representation.shape == (1, 2)
@@ -422,6 +420,28 @@ def test_add_ones_broadcast():
         id="4_1", index=(0, 1), value=2, sources=["2_1", "3_1"]
     )
 
+def test_add_inplace():
+    opart.reset_ids()
+
+    a = xp.ones((1, 2))
+    b = xp.ones((1, 2))
+
+    assert np.all(a.arr_ids == 0)
+    assert_array_equal(a.offsets, [[0, 1]])
+    assert a.src_arr_ids == None
+    assert a.src_offsets == None
+
+    a += b
+
+    a2 = np.ones((1, 2))
+    a2 += np.ones((1, 2))
+    assert_array_equal(a.arr, a2)
+
+    # a's src arrays have been updated
+    assert np.all(a.arr_ids == 0)
+    assert_array_equal(a.offsets, [[0, 1]])
+    assert_array_equal(a.src_arr_ids, [[[0, 1], [0, 1]]])
+    assert_array_equal(a.src_offsets, [[[0, 0], [1, 1]]])
 
 def test_broadcast_to():
     opart.reset_ids()

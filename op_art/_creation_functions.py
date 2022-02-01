@@ -36,7 +36,7 @@ def eye(n_rows, n_cols=None, /, *, k=0, dtype=None, device=None):
     return Array(arr)
 
 def from_dlpack(x, /):
-    arr = nxp._from_dlpack(x)
+    arr = nxp.from_dlpack(x)
     return Array(arr)
 
 def full(shape, fill_value, *, dtype=None, device=None):

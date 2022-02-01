@@ -288,7 +288,12 @@ class Array:
         arr = self.arr.__xor__(other.arr)
         return _elementwise_binary_operation2(self, other, arr)
 
-    # TODO: __iadd__
+    def __iadd__(self, other, /):
+        if isinstance(other, (int, float, bool)):
+            other = self._promote_scalar(other)
+        self.arr.__iadd__(other.arr)
+        _inplace_elementwise_binary_operation2(self, other)
+        return self
 
     def __radd__(self, other, /):
         if isinstance(other, (int, float, bool)):
@@ -296,7 +301,12 @@ class Array:
         arr = self.arr.__radd__(other.arr)
         return _elementwise_binary_operation2(other, self, arr)
 
-    # TODO: __iand__
+    def __iand__(self, other, /):
+        if isinstance(other, (int, float, bool)):
+            other = self._promote_scalar(other)
+        self.arr.__iand__(other.arr)
+        _inplace_elementwise_binary_operation2(self, other)
+        return self
 
     def __rand__(self, other, /):
         if isinstance(other, (int, float, bool)):
@@ -304,7 +314,12 @@ class Array:
         arr = self.arr.__rand__(other.arr)
         return _elementwise_binary_operation2(other, self, arr)
 
-    # TODO: __ifloordiv__
+    def __ifloordiv__(self, other, /):
+        if isinstance(other, (int, float, bool)):
+            other = self._promote_scalar(other)
+        self.arr.__ifloordiv__(other.arr)
+        _inplace_elementwise_binary_operation2(self, other)
+        return self
 
     def __rfloordiv__(self, other, /):
         if isinstance(other, (int, float, bool)):
@@ -312,7 +327,12 @@ class Array:
         arr = self.arr.__rfloordiv__(other.arr)
         return _elementwise_binary_operation2(other, self, arr)
 
-    # TODO: __ilshift__
+    def __ilshift__(self, other, /):
+        if isinstance(other, (int, float, bool)):
+            other = self._promote_scalar(other)
+        self.arr.__ilshift__(other.arr)
+        _inplace_elementwise_binary_operation2(self, other)
+        return self
 
     def __rlshift__(self, other, /):
         if isinstance(other, (int, float, bool)):
@@ -320,7 +340,12 @@ class Array:
         arr = self.arr.__rlshift__(other.arr)
         return _elementwise_binary_operation2(other, self, arr)
 
-    # TODO: __imatmul__
+    def __imatmul__(self, other, /):
+        if isinstance(other, (int, float, bool)):
+            other = self._promote_scalar(other)
+        self.arr.__imatmul__(other.arr)
+        _inplace_elementwise_binary_operation2(self, other)
+        return self
 
     def __rmatmul__(self, other, /):
         if isinstance(other, (int, float, bool)):
@@ -328,7 +353,12 @@ class Array:
         import op_art
         return op_art.matmul(other, self)
 
-    # TODO: __imod__
+    def __imod__(self, other, /):
+        if isinstance(other, (int, float, bool)):
+            other = self._promote_scalar(other)
+        self.arr.__imod__(other.arr)
+        _inplace_elementwise_binary_operation2(self, other)
+        return self
 
     def __rmod__(self, other, /):
         if isinstance(other, (int, float, bool)):
@@ -336,8 +366,12 @@ class Array:
         arr = self.arr.__rmod__(other.arr)
         return _elementwise_binary_operation2(other, self, arr)
 
-
-    # TODO: __imul__
+    def __imul__(self, other, /):
+        if isinstance(other, (int, float, bool)):
+            other = self._promote_scalar(other)
+        self.arr.__imul__(other.arr)
+        _inplace_elementwise_binary_operation2(self, other)
+        return self
 
     def __rmul__(self, other, /):
         if isinstance(other, (int, float, bool)):
@@ -345,8 +379,12 @@ class Array:
         arr = self.arr.__rmul__(other.arr)
         return _elementwise_binary_operation2(other, self, arr)
 
-
-    # TODO: __ior__
+    def __ior__(self, other, /):
+        if isinstance(other, (int, float, bool)):
+            other = self._promote_scalar(other)
+        self.arr.__ior__(other.arr)
+        _inplace_elementwise_binary_operation2(self, other)
+        return self
 
     def __ror__(self, other, /):
         if isinstance(other, (int, float, bool)):
@@ -354,8 +392,12 @@ class Array:
         arr = self.arr.__ror__(other.arr)
         return _elementwise_binary_operation2(other, self, arr)
 
-
-    # TODO: __ipow__
+    def __ipow__(self, other, /):
+        if isinstance(other, (int, float, bool)):
+            other = self._promote_scalar(other)
+        self.arr.__ipow__(other.arr)
+        _inplace_elementwise_binary_operation2(self, other)
+        return self
 
     def __rpow__(self, other, /):
         if isinstance(other, (int, float, bool)):
@@ -363,8 +405,12 @@ class Array:
         arr = self.arr.__rpow__(other.arr)
         return _elementwise_binary_operation2(other, self, arr)
 
-
-    # TODO: __irshift__
+    def __irshift__(self, other, /):
+        if isinstance(other, (int, float, bool)):
+            other = self._promote_scalar(other)
+        self.arr.__irshift__(other.arr)
+        _inplace_elementwise_binary_operation2(self, other)
+        return self
 
     def __rrshift__(self, other, /):
         if isinstance(other, (int, float, bool)):
@@ -372,8 +418,12 @@ class Array:
         arr = self.arr.__rrshift__(other.arr)
         return _elementwise_binary_operation2(other, self, arr)
 
-
-    # TODO: __isub__
+    def __isub__(self, other, /):
+        if isinstance(other, (int, float, bool)):
+            other = self._promote_scalar(other)
+        self.arr.__isub__(other.arr)
+        _inplace_elementwise_binary_operation2(self, other)
+        return self
 
     def __rsub__(self, other, /):
         if isinstance(other, (int, float, bool)):
@@ -381,8 +431,12 @@ class Array:
         arr = self.arr.__rsub__(other.arr)
         return _elementwise_binary_operation2(other, self, arr)
 
-
-    # TODO: __itruediv__
+    def __itruediv__(self, other, /):
+        if isinstance(other, (int, float, bool)):
+            other = self._promote_scalar(other)
+        self.arr.__itruediv__(other.arr)
+        _inplace_elementwise_binary_operation2(self, other)
+        return self
 
     def __rtruediv__(self, other, /):
         if isinstance(other, (int, float, bool)):
@@ -390,8 +444,12 @@ class Array:
         arr = self.arr.__rtruediv__(other.arr)
         return _elementwise_binary_operation2(other, self, arr)
 
-
-    # TODO: __ixor__
+    def __ixor__(self, other, /):
+        if isinstance(other, (int, float, bool)):
+            other = self._promote_scalar(other)
+        self.arr.__ixor__(other.arr)
+        _inplace_elementwise_binary_operation2(self, other)
+        return self
 
     def __rxor__(self, other, /):
         if isinstance(other, (int, float, bool)):
@@ -516,6 +574,13 @@ def _elementwise_binary_operation2(x1, x2, arr):
     src_offsets = nxp.stack([x1_offsets, x2_offsets], axis=-1)
 
     return Array(arr, src_arr_ids, src_offsets)
+
+def _inplace_elementwise_binary_operation2(x1, x2):
+    x1_arr_ids, x2_arr_ids = nxp.broadcast_arrays(x1.arr_ids, x2.arr_ids)
+    x1_offsets, x2_offsets = nxp.broadcast_arrays(x1.offsets, x2.offsets)
+
+    x1.src_arr_ids = nxp.stack([x1_arr_ids, x2_arr_ids], axis=-1)
+    x1.src_offsets = nxp.stack([x1_offsets, x2_offsets], axis=-1)
 
 def _structural_operation(x, array_op, *args, **kwargs):
     # Suitable for operations that change the structure of x, not its values
