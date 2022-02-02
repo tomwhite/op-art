@@ -8,16 +8,24 @@ from ._dtypes import _numeric_dtypes
 from ._einsum import einsum
 
 def matmul(x1, x2, /):
-    if x1.ndim != 2 or x2.ndim != 2:
-        raise NotImplementedError("matmul only implemented for 2x2 arrays")
-
-    return einsum("...ij,...jk->...ik", x1, x2)
+    xp = x1.arr.__array_namespace__()
+    xp.matmul(x1.arr, x2.arr) # call for error checking
+    if x1.ndim == 1 and x2.ndim == 1:
+        return einsum("i,i->", x1, x2)
+    elif x1.ndim == 1 and x2.ndim == 2:
+        return einsum("i,ij->j", x1, x2)
+    elif x1.ndim == 2 and x2.ndim == 1:
+        return einsum("ij,j->i", x1, x2)
+    else:
+        return einsum("...ij,...jk->...ik", x1, x2)
 
 def matrix_transpose(x, /):
     xp = x.arr.__array_namespace__()
     return _structural_operation(x, xp.matrix_transpose)
 
 def tensordot(x1, x2, /, *, axes=2):
+    xp = x1.arr.__array_namespace__()
+    xp.tensordot(x1.arr, x2.arr, axes=axes) # call for error checking
     if x1.dtype not in _numeric_dtypes or x2.dtype not in _numeric_dtypes:
         raise TypeError('Only numeric dtypes are allowed in tensordot')
     if x1.ndim == 0:
