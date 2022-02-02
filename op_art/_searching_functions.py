@@ -24,8 +24,7 @@ def nonzero(x, /):
         # we would like to say:
         # src_arr_ids = x.arr_ids[arrs]
         # src_offsets = x.offsets[arrs]
-        # but the array api does not allow indexing by tuples of int arrays, so use np
-        # TODO: open an array api issue
+        # but the array api does not allow integer array indices, so use np
         np_arrs = tuple(np.asarray(a) for a in arrs)
         src_arr_ids = xp.asarray(np.asarray(x.arr_ids)[np_arrs])
         src_offsets = xp.asarray(np.asarray(x.offsets)[np_arrs])
