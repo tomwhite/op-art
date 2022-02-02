@@ -66,31 +66,20 @@ def ones_like(x, /, *, dtype=None, device=None):
     return Array(arr, x.arr_ids, x.offsets)
 
 def _tri(x, /, *, lower, k=0):
-    # use np namespace since array api doesn't support indexing by tuples of ints (see comment in nonzero)
     if x.ndim < 2:
         raise ValueError("x must be at least 2-dimensional for tril/triu")
 
+    xp = x.arr.__array_namespace__()
+    mask = xp.ones((x.shape[-2], x.shape[-1]), dtype=xp.int32)
     if lower:
-        arr = np.tril(np.asarray(x.arr), k=k)
-        tri_indices = np.tril_indices(x.shape[-2], k=k, m=x.shape[-1])
+        arr = xp.tril(x.arr, k=k)
+        mask = xp.tril(mask, k=k)
     else:
-        arr = np.triu(x.arr, k=k)
-        tri_indices = np.triu_indices(x.shape[-2], k=k, m=x.shape[-1])
+        arr = xp.triu(x.arr, k=k)
+        mask = xp.triu(mask, k=k)
 
-    src_arr_ids = np.full_like(arr, -1, dtype=np.int32)
-    src_offsets = np.full_like(arr, -1, dtype=np.int32)
-    if x.ndim > 2:
-        src_arr_ids[:, tri_indices] = np.asarray(x.arr_ids)[:, tri_indices]
-        src_offsets[:, tri_indices] = np.asarray(x.offsets)[:, tri_indices]
-    else:
-        src_arr_ids[tri_indices] = np.asarray(x.arr_ids)[tri_indices]
-        src_offsets[tri_indices] = np.asarray(x.offsets)[tri_indices]
-
-    # convert back to array api types
-    arr = nxp.asarray(arr)
-    src_arr_ids = nxp.asarray(src_arr_ids)
-    src_offsets = nxp.asarray(src_offsets)
-
+    src_arr_ids = xp.where(mask, x.arr_ids, xp.full(1, -1, dtype=xp.int32))
+    src_offsets = xp.where(mask, x.offsets, xp.full(1, -1, dtype=xp.int32))
     return Array(arr, src_arr_ids, src_offsets)
 
 def tril(x, /, *, k=0):
