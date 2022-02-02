@@ -1,12 +1,68 @@
 # Functions for visualizing array operations using HTML and JavaScript
 
+from dataclasses import asdict, dataclass
 import inspect
 import json
 import os
 from textwrap import dedent
+from typing import Any, Tuple
+
+import numpy as np
+import numpy.array_api as nxp
 
 from . import _array_object
-from ._array_object import ArrayRepresentation, CellRepresentation
+
+@dataclass()
+class CellRepresentation:
+    id: Any
+    index: Any
+    value: Any
+    sources: Any = None
+
+
+@dataclass()
+class ArrayRepresentation:
+    id: int
+    kind: str
+    ndim: int
+    shape: Any
+    cells: Tuple[CellRepresentation]
+
+
+def _get_representation(array):
+    """Convert array into a representation suitable for visualization"""
+    arr = array.arr
+    cells = []
+    it = np.nditer(arr, flags=["multi_index", "refs_ok", "zerosize_ok"], order="C")
+    for x in it:
+        ind = it.multi_index
+        offset = array.offsets[ind]
+        cell_id = f"{array.id}_{offset}"
+        if array.src_arr_ids is None:
+            cell_sources = None
+        else:
+            if array.offsets.ndim == array.src_arr_ids.ndim:
+                src_ind = ind
+            else:
+                src_ind = ind + (Ellipsis,)
+            src_arr_id = array.src_arr_ids[src_ind]
+            if src_arr_id.ndim == 0:
+                if src_arr_id == -1:
+                    cell_sources = None
+                else:
+                    src_offset = array.src_offsets[src_ind]
+                    cell_sources = [f"{src_arr_id}_{src_offset}"]
+            else:
+                if nxp.all(src_arr_id == -1):
+                    cell_sources = None
+                else:
+                    src_offset = array.src_offsets[src_ind]
+                    cell_sources = [f"{i}_{o}" for i, o in zip(src_arr_id, src_offset) if i != -1]
+        cells.append(CellRepresentation(cell_id, it.multi_index, x.item(), cell_sources))
+    return ArrayRepresentation(array.id, arr.dtype.kind, arr.ndim, arr.shape, tuple(cells))
+
+def get_array_id_to_representation():
+    return {id: _get_representation(array) for id, array in _array_object.id_to_array.items()}
 
 def _rewrite_sources(source_ids, visible_ids, cell_id_to_sources):
     if source_ids is None:
@@ -20,31 +76,38 @@ def _rewrite_sources(source_ids, visible_ids, cell_id_to_sources):
             res.extend(_rewrite_sources(cell_id_to_sources[si], visible_ids, cell_id_to_sources))
     return res
 
-def rewrite_sources(source_ids, visible_ids):
+def rewrite_sources(source_ids, visible_ids, cell_id_to_sources):
     """Rewrite sources so none are from invisible arrays"""
-    cell_id_to_sources = {}
-    for array_id, array in _array_object.id_to_array.items():
-        cells = array.representation.cells
-        for cell in cells:
-            cell_id_to_sources[cell.id] = cell.sources
-
     x = _rewrite_sources(source_ids, visible_ids, cell_id_to_sources)
     return x if len(x) > 0 else None
 
-def rewrite_representation(arr_rep, visible_ids=None):
+def rewrite_representation(arr_rep, visible_ids=None, array_id_to_representation=None):
     """Rewrite representation so it doesn't include any invisible arrays"""
     if visible_ids is None:
         return arr_rep
+    if array_id_to_representation is None:
+        array_id_to_representation = get_array_id_to_representation()
+    cell_id_to_sources = {}
+    for representation in array_id_to_representation.values():
+        cells = representation.cells
+        for cell in cells:
+            cell_id_to_sources[cell.id] = cell.sources
     new_cells = []
     for cell in arr_rep.cells:
-        new_sources = rewrite_sources(cell.sources, visible_ids)
+        new_sources = rewrite_sources(cell.sources, visible_ids, cell_id_to_sources)
         new_cell = CellRepresentation(cell.id, cell.index, cell.value, new_sources)
         new_cells.append(new_cell)
     return ArrayRepresentation(arr_rep.id, arr_rep.kind, arr_rep.ndim, arr_rep.shape, new_cells)
 
+def array_to_json_dict(array, visible_ids=None, array_id_to_representation=None):
+    if array_id_to_representation is None:
+        array_id_to_representation = get_array_id_to_representation()
+    return asdict(rewrite_representation(array_id_to_representation[array.id], visible_ids, array_id_to_representation))
+
 def arrays_to_json(arrays):
     visible_ids = [a.id for a in arrays]
-    return json.dumps([a.to_json(visible_ids) for a in arrays], indent=2)
+    array_id_to_representation = get_array_id_to_representation()
+    return json.dumps([array_to_json_dict(a, visible_ids, array_id_to_representation) for a in arrays], indent=2)
 
 def strings_to_json(strings):
     return json.dumps(strings, indent=2)

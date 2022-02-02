@@ -1,6 +1,3 @@
-from dataclasses import asdict, dataclass
-from typing import Any, Tuple
-import builtins
 import itertools
 import json
 import numpy as np
@@ -36,8 +33,6 @@ class Array:
         if self.src_arr_ids is not None and self.arr.ndim == self.src_arr_ids.ndim:
             self.src_arr_ids = nxp.expand_dims(self.src_arr_ids, axis=-1)
             self.src_offsets = nxp.expand_dims(self.src_offsets, axis=-1)
-        self.representation = Array._get_representation(self.arr, self.id, self.offsets, src_arr_ids, src_offsets)
-        assert self.representation.id == self.id
         id_to_array[self.id] = self
   
     @property
@@ -132,7 +127,6 @@ class Array:
         else:
             self.src_arr_ids[src_item] = value.arr_ids
             self.src_offsets[src_item] = value.offsets
-        self.representation = Array._get_representation(self.arr, self.id, self.offsets, self.src_arr_ids, self.src_offsets)
 
     def __abs__(self, /):
         return Array(self.arr.__abs__(), self.arr_ids, self.offsets)
@@ -461,71 +455,18 @@ class Array:
         arr = self.arr.__rxor__(other.arr)
         return _elementwise_binary_operation2(other, self, arr)
 
-
-    @staticmethod
-    def _get_representation(arr, id, offsets, src_arr_ids, src_offsets):
-        """Convert array into a representation suitable for visualization"""
-        cells = []
-        it = np.nditer(arr, flags=["multi_index", "refs_ok", "zerosize_ok"], order="C")
-        for x in it:
-            ind = it.multi_index
-            offset = offsets[ind]
-            cell_id = f"{id}_{offset}"
-            if src_arr_ids is None:
-                cell_sources = None
-            else:
-                if offsets.ndim == src_arr_ids.ndim:
-                    src_ind = ind
-                else:
-                    src_ind = ind + (Ellipsis,)
-                src_arr_id = src_arr_ids[src_ind]
-                if src_arr_id.ndim == 0:
-                    if src_arr_id == -1:
-                        cell_sources = None
-                    else:
-                        src_offset = src_offsets[src_ind]
-                        cell_sources = [f"{src_arr_id}_{src_offset}"]
-                else:
-                    if nxp.all(src_arr_id == -1):
-                        cell_sources = None
-                    else:
-                        src_offset = src_offsets[src_ind]
-                        cell_sources = [f"{i}_{o}" for i, o in zip(src_arr_id, src_offset) if i != -1]
-            cells.append(CellRepresentation(cell_id, it.multi_index, x.item(), cell_sources))
-        return ArrayRepresentation(id, arr.dtype.kind, arr.ndim, arr.shape, tuple(cells))
-
-    def to_json(self, visible_ids=None):
-        from ._visualization import rewrite_representation
-        return asdict(rewrite_representation(self.representation, visible_ids))
-
     def __repr__(self):
-        return f"Array(id={self.id},\narr={self.arr},\nsrc_arr_ids={self.src_arr_ids},\nsrc_offsets={self.src_offsets},\nrepresentation={self.representation})"
+        return f"Array(id={self.id},\narr={self.arr},\nsrc_arr_ids={self.src_arr_ids},\nsrc_offsets={self.src_offsets})"
 
     def _repr_javascript_(self):
+        from ._visualization import array_to_json_dict
         return """
         (function(element){
             require(['op_art'], function(op_art) {
                 op_art.visualize(element.get(0), %s, [""], 1500, true);
             });
         })(element);
-        """ % json.dumps([self.to_json(visible_ids=[self.id])])
-
-@dataclass()
-class CellRepresentation:
-    id: Any
-    index: Any
-    value: Any
-    sources: Any = None
-
-
-@dataclass()
-class ArrayRepresentation:
-    id: int
-    kind: str
-    ndim: int
-    shape: Any
-    cells: Tuple[CellRepresentation]
-
+        """ % json.dumps([array_to_json_dict(self, visible_ids=[self.id])])
 
 def _elementwise_unary_operation(x, array_op):
     arr = array_op(x.arr)
