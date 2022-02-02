@@ -3,6 +3,7 @@
 
 # Good animations are hard to implement for these functions!
 
+from ._array_object import _structural_operation
 from ._dtypes import _numeric_dtypes
 from ._einsum import einsum
 
@@ -13,9 +14,8 @@ def matmul(x1, x2, /):
     return einsum("...ij,...jk->...ik", x1, x2)
 
 def matrix_transpose(x, /):
-    if x.ndim < 2:
-        raise ValueError("x must be at least 2-dimensional for matrix_transpose")
-    return einsum("...ij->...ji", x)
+    xp = x.arr.__array_namespace__()
+    return _structural_operation(x, xp.matrix_transpose)
 
 def tensordot(x1, x2, /, *, axes=2):
     if x1.dtype not in _numeric_dtypes or x2.dtype not in _numeric_dtypes:
