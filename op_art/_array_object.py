@@ -603,7 +603,10 @@ def _reduction_operation(x, axis, array_op, keepdims=False, **kwargs):
         return a if a >= 0 else a + arr.ndim
 
     # note that axis can be None, a single int, or a tuple of ints
-    if axis is None:
+    if x.ndim == 0:
+        src_arr_ids = x.arr_ids
+        src_offsets = x.offsets
+    elif axis is None:
         src_arr_ids = xp.reshape(x.arr_ids, -1)
         src_offsets = xp.reshape(x.offsets, -1)
     elif isinstance(axis, int):
