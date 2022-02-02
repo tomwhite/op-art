@@ -75,6 +75,15 @@ def test_setitem_multiple_sources():
     assert_array_equal(c.src_arr_ids, [[[0, 1], [3, -1]], [[0, 1], [3, -1]], [[0, 1], [3, -1]]])
     assert_array_equal(c.src_offsets, [[[0, 0], [0, -1]], [[2, 2], [1, -1]], [[4, 4], [2, -1]]])
 
+def test_setitem_edge_case():
+    opart.reset_ids()
+
+    a = xp.asarray(False)
+    b = xp.asarray(False)
+    b[a] = False
+
+    assert_array_equal(b.src_arr_ids, [-1])
+
 def test_add():
     opart.reset_ids()
 

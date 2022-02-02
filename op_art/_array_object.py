@@ -121,7 +121,7 @@ class Array:
             src_item = item
         else:
             src_item = item + (Ellipsis,)
-        if value.arr_ids.shape != self.src_arr_ids[src_item].shape:
+        if self.src_arr_ids[src_item].size > 0 and self.src_arr_ids[src_item].size > value.arr_ids.size:
             # there are more sources in self than value, so expand value arrays to match
             value_arr_ids = np.full_like(self.src_arr_ids[src_item], -1, dtype=np.int32)
             value_offsets = np.full_like(self.src_offsets[src_item], -1, dtype=np.int32)
