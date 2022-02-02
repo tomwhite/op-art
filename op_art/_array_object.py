@@ -32,6 +32,10 @@ class Array:
         self.offsets = nxp.reshape(self.offsets, arr.shape)
         self.src_arr_ids = src_arr_ids
         self.src_offsets = src_offsets
+        # ensure sources always have one more dimension than the array
+        if self.src_arr_ids is not None and self.arr.ndim == self.src_arr_ids.ndim:
+            self.src_arr_ids = nxp.expand_dims(self.src_arr_ids, axis=-1)
+            self.src_offsets = nxp.expand_dims(self.src_offsets, axis=-1)
         self.representation = Array._get_representation(self.arr, self.id, self.offsets, src_arr_ids, src_offsets)
         assert self.representation.id == self.id
         id_to_array[self.id] = self

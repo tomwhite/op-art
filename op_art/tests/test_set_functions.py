@@ -48,8 +48,8 @@ def test_unique_inverse():
     assert_array_equal(b.src_offsets, [[4, 5], [0, 1], [2, -1], [3, -1]])
 
     assert_array_equal(c.arr, [1, 1, 2, 3, 0, 0])
-    assert_array_equal(c.src_arr_ids, [0, 0, 0, 0, 0, 0])
-    assert_array_equal(c.src_offsets, [0, 1, 2, 3, 4, 5])
+    assert_array_equal(c.src_arr_ids, [[0], [0], [0], [0], [0], [0]])
+    assert_array_equal(c.src_offsets, [[0], [1], [2], [3], [4], [5]])
 
 def test_unique_all():
     opart.reset_ids()
@@ -72,8 +72,8 @@ def test_unique_all():
     assert_array_equal(c.src_offsets, [[4, 5], [0, 1], [2, -1], [3, -1]])
 
     assert_array_equal(d.arr, [1, 1, 2, 3, 0, 0])
-    assert_array_equal(d.src_arr_ids, [0, 0, 0, 0, 0, 0])
-    assert_array_equal(d.src_offsets, [0, 1, 2, 3, 4, 5])
+    assert_array_equal(d.src_arr_ids, [[0], [0], [0], [0], [0], [0]])
+    assert_array_equal(d.src_offsets, [[0], [1], [2], [3], [4], [5]])
 
     assert_array_equal(e.arr, [2, 2, 1, 1])
     assert_array_equal(e.src_arr_ids, [[0, 0], [0, 0], [0, -1], [0, -1]])
@@ -98,8 +98,8 @@ def test_unique_2d():
     assert_array_equal(c.src_offsets, [[4, 5], [0, 1], [2, -1], [3, -1]])
 
     assert_array_equal(d.arr, [[1, 1, 2], [3, 0, 0]])
-    assert_array_equal(d.src_arr_ids, [[1, 1, 1], [1, 1, 1]])
-    assert_array_equal(d.src_offsets, [[0, 1, 2], [3, 4, 5]])
+    assert_array_equal(d.src_arr_ids, [[[1], [1], [1]], [[1], [1], [1]]])
+    assert_array_equal(d.src_offsets, [[[0], [1], [2]], [[3], [4], [5]]])
 
     assert_array_equal(e.arr, [2, 2, 1, 1])
     assert_array_equal(c.src_arr_ids, [[1, 1], [1, 1], [1, -1], [1, -1]])

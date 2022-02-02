@@ -72,7 +72,7 @@ def test_matrix_transpose():
     b = xp.matrix_transpose(a)
 
     assert_array_equal(b.arr, np.transpose(np.arange(6).reshape(3, 2)))
-    assert_array_equal(b.src_arr_ids, [[1, 1, 1], [1, 1, 1]])
-    assert_array_equal(b.src_offsets, [[0, 2, 4], [1, 3, 5]])
+    assert_array_equal(b.src_arr_ids, [[[1], [1], [1]], [[1], [1], [1]]])
+    assert_array_equal(b.src_offsets, [[[0], [2], [4]], [[1], [3], [5]]])
 
 

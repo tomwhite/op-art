@@ -10,8 +10,8 @@ def test_argsort():
     b = xp.argsort(a)
 
     assert_array_equal(b.arr, np.argsort(np.array([5, 1, 0, 3, 2, 4])))
-    assert_array_equal(b.src_arr_ids, [0, 0, 0, 0, 0, 0])
-    assert_array_equal(b.src_offsets, [2, 1, 4, 3, 5, 0])
+    assert_array_equal(b.src_arr_ids, [[0], [0], [0], [0], [0], [0]])
+    assert_array_equal(b.src_offsets, [[2], [1], [4], [3], [5], [0]])
 
 def test_sort():
     opart.reset_ids()
@@ -20,5 +20,5 @@ def test_sort():
     b = xp.sort(a)
 
     assert_array_equal(b.arr, np.sort(np.array([5, 1, 0, 3, 2, 4])))
-    assert_array_equal(b.src_arr_ids, [0, 0, 0, 0, 0, 0])
-    assert_array_equal(b.src_offsets, [2, 1, 4, 3, 5, 0])
+    assert_array_equal(b.src_arr_ids, [[0], [0], [0], [0], [0], [0]])
+    assert_array_equal(b.src_offsets, [[2], [1], [4], [3], [5], [0]])

@@ -11,5 +11,5 @@ def test_broadcast_to():
 
     assert np.all(b.arr_ids == 1)
     assert_array_equal(b.offsets, [[0, 1]])
-    assert_array_equal(b.src_arr_ids, [[0, 0]])
-    assert_array_equal(b.src_offsets, [[0, 0]])
+    assert_array_equal(b.src_arr_ids, [[[0], [0]]])
+    assert_array_equal(b.src_offsets, [[[0], [0]]])

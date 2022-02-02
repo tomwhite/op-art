@@ -27,12 +27,12 @@ def test_nonzero():
     assert_array_equal(c.arr, nz1)
 
     assert_array_equal(b.arr, [0, 1, 2, 2])
-    assert_array_equal(b.src_arr_ids, [0, 0, 0, 0])
-    assert_array_equal(b.src_offsets, [0, 4, 6, 7])
+    assert_array_equal(b.src_arr_ids, [[0], [0], [0], [0]])
+    assert_array_equal(b.src_offsets, [[0], [4], [6], [7]])
 
     assert_array_equal(c.arr, [0, 1, 0, 1])
-    assert_array_equal(c.src_arr_ids, [0, 0, 0, 0])
-    assert_array_equal(c.src_offsets, [0, 4, 6, 7])
+    assert_array_equal(c.src_arr_ids, [[0], [0], [0], [0]])
+    assert_array_equal(c.src_offsets, [[0], [4], [6], [7]])
 
 def test_where():
     opart.reset_ids()

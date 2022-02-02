@@ -25,7 +25,8 @@ def matrix_transpose(x, /):
 
 def tensordot(x1, x2, /, *, axes=2):
     xp = x1.arr.__array_namespace__()
-    xp.tensordot(x1.arr, x2.arr, axes=axes) # call for error checking
+    res = xp.tensordot(x1.arr, x2.arr, axes=axes) # call for error checking
+    print(f"{res=} for axes={axes}")
     if x1.dtype not in _numeric_dtypes or x2.dtype not in _numeric_dtypes:
         raise TypeError('Only numeric dtypes are allowed in tensordot')
     if x1.ndim == 0:

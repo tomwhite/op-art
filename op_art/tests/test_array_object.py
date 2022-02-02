@@ -13,8 +13,8 @@ def test_transpose_attr():
     assert_array_equal(c.arr, np.arange(6).reshape((3, 2)).T)
     assert np.all(c.arr_ids == 2)
     assert_array_equal(c.offsets, [[0, 1, 2], [3, 4, 5]])
-    assert_array_equal(c.src_arr_ids, [[1, 1, 1], [1, 1, 1]])
-    assert_array_equal(c.src_offsets, [[0, 2, 4], [1, 3, 5]])
+    assert_array_equal(c.src_arr_ids, [[[1], [1], [1]], [[1], [1], [1]]])
+    assert_array_equal(c.src_offsets, [[[0], [2], [4]], [[1], [3], [5]]])
 
 def test_getitem_single_axis():
     opart.reset_ids()
@@ -25,8 +25,8 @@ def test_getitem_single_axis():
     assert_array_equal(b.arr, np.arange(6)[1:3])
     assert np.all(b.arr_ids == 1)
     assert_array_equal(b.offsets, [0, 1])
-    assert_array_equal(b.src_arr_ids, [0, 0])
-    assert_array_equal(b.src_offsets, [1, 2])
+    assert_array_equal(b.src_arr_ids, [[0], [0]])
+    assert_array_equal(b.src_offsets, [[1], [2]])
 
 def test_getitem_boolean_array():
     opart.reset_ids()
@@ -38,8 +38,8 @@ def test_getitem_boolean_array():
     assert_array_equal(c.arr, a.arr[b.arr])
     assert np.all(c.arr_ids == 2)
     assert_array_equal(c.offsets, [0, 1, 2])
-    assert_array_equal(c.src_arr_ids, [0, 0, 0])
-    assert_array_equal(c.src_offsets, [0, 2, 4])
+    assert_array_equal(c.src_arr_ids, [[0], [0], [0]])
+    assert_array_equal(c.src_offsets, [[0], [2], [4]])
 
 def test_setitem():
     opart.reset_ids()

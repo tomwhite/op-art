@@ -32,5 +32,5 @@ def test_negative():
     b = xp.negative(a)
 
     assert_array_equal(b.arr, np.negative(np.arange(6)))
-    assert_array_equal(b.src_arr_ids, [0, 0, 0, 0, 0, 0])
-    assert_array_equal(b.src_offsets, [0, 1, 2, 3, 4, 5])
+    assert_array_equal(b.src_arr_ids, [[0], [0], [0], [0], [0], [0]])
+    assert_array_equal(b.src_offsets, [[0], [1], [2], [3], [4], [5]])

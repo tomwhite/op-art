@@ -24,11 +24,11 @@ def test_meshgrid():
     assert_array_equal(c.arr, np.meshgrid(a.arr, b.arr)[0])
     assert_array_equal(d.arr, np.meshgrid(a.arr, b.arr)[1])
 
-    assert_array_equal(c.src_arr_ids, [[0, 0, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0]])
-    assert_array_equal(c.src_offsets, [[0, 1, 2, 3], [0, 1, 2, 3], [0, 1, 2, 3]])
+    assert_array_equal(np.asarray(c.src_arr_ids).squeeze(), [[0, 0, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0]])
+    assert_array_equal(np.asarray(c.src_offsets).squeeze(), [[0, 1, 2, 3], [0, 1, 2, 3], [0, 1, 2, 3]])
 
-    assert_array_equal(d.src_arr_ids, [[1, 1, 1, 1], [1, 1, 1, 1], [1, 1, 1, 1]])
-    assert_array_equal(d.src_offsets, [[0, 0, 0, 0], [1, 1, 1, 1], [2, 2, 2, 2]])
+    assert_array_equal(np.asarray(d.src_arr_ids).squeeze(), [[1, 1, 1, 1], [1, 1, 1, 1], [1, 1, 1, 1]])
+    assert_array_equal(np.asarray(d.src_offsets).squeeze(), [[0, 0, 0, 0], [1, 1, 1, 1], [2, 2, 2, 2]])
 
 def test_ones():
     opart.reset_ids()
@@ -48,8 +48,8 @@ def test_tril():
     b = xp.tril(a)
 
     assert_array_equal(b.arr, np.tril(np.array([[1, 2, 3], [4, 5, 6], [7, 8, 9]])))
-    assert_array_equal(b.src_arr_ids, [[0, -1, -1], [0, 0, -1], [0, 0, 0]])
-    assert_array_equal(b.src_offsets, [[0, -1, -1], [3, 4, -1], [6, 7, 8]])
+    assert_array_equal(np.asarray(b.src_arr_ids).squeeze(), [[0, -1, -1], [0, 0, -1], [0, 0, 0]])
+    assert_array_equal(np.asarray(b.src_offsets).squeeze(), [[0, -1, -1], [3, 4, -1], [6, 7, 8]])
 
 def test_triu():
     opart.reset_ids()
@@ -58,8 +58,8 @@ def test_triu():
     b = xp.triu(a)
 
     assert_array_equal(b.arr, np.triu(np.array([[1, 2, 3], [4, 5, 6], [7, 8, 9]])))
-    assert_array_equal(b.src_arr_ids, [[0, 0, 0], [-1, 0, 0], [-1, -1, 0]])
-    assert_array_equal(b.src_offsets, [[0, 1, 2], [-1, 4, 5], [-1, -1, 8]])
+    assert_array_equal(np.asarray(b.src_arr_ids).squeeze(), [[0, 0, 0], [-1, 0, 0], [-1, -1, 0]])
+    assert_array_equal(np.asarray(b.src_offsets).squeeze(), [[0, 1, 2], [-1, 4, 5], [-1, -1, 8]])
 
 def test_tril_3d():
     opart.reset_ids()
@@ -69,5 +69,5 @@ def test_tril_3d():
     b = xp.tril(a)
 
     assert_array_equal(b.arr, np.tril(np.arange(1, 19).reshape(2, 3, 3)))
-    assert_array_equal(b.src_arr_ids, [[[1, -1, -1], [1, 1, -1], [1, 1, 1]], [[1, -1, -1], [1, 1, -1], [1, 1, 1]]])
-    assert_array_equal(b.src_offsets, [[[0, -1, -1], [3, 4, -1], [6, 7, 8]], [[9, -1, -1], [12, 13, -1], [15, 16, 17]]])
+    assert_array_equal(np.asarray(b.src_arr_ids).squeeze(), [[[1, -1, -1], [1, 1, -1], [1, 1, 1]], [[1, -1, -1], [1, 1, -1], [1, 1, 1]]])
+    assert_array_equal(np.asarray(b.src_offsets).squeeze(), [[[0, -1, -1], [3, 4, -1], [6, 7, 8]], [[9, -1, -1], [12, 13, -1], [15, 16, 17]]])
