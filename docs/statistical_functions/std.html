@@ -21,7 +21,7 @@
         const arrs = [
   {
     "id": 1,
-    "kind": "i",
+    "kind": "f",
     "ndim": 2,
     "shape": [
       3,
@@ -34,7 +34,7 @@
           0,
           0
         ],
-        "value": 0,
+        "value": 0.0,
         "sources": null
       },
       {
@@ -43,7 +43,7 @@
           0,
           1
         ],
-        "value": 1,
+        "value": 1.0,
         "sources": null
       },
       {
@@ -52,7 +52,7 @@
           1,
           0
         ],
-        "value": 2,
+        "value": 2.0,
         "sources": null
       },
       {
@@ -61,7 +61,7 @@
           1,
           1
         ],
-        "value": 3,
+        "value": 3.0,
         "sources": null
       },
       {
@@ -70,7 +70,7 @@
           2,
           0
         ],
-        "value": 4,
+        "value": 4.0,
         "sources": null
       },
       {
@@ -79,7 +79,7 @@
           2,
           1
         ],
-        "value": 5,
+        "value": 5.0,
         "sources": null
       }
     ]
@@ -97,7 +97,7 @@
         "index": [
           0
         ],
-        "value": 1.632993161855452,
+        "value": 1.632993221282959,
         "sources": [
           "1_0",
           "1_2",
@@ -109,7 +109,7 @@
         "index": [
           1
         ],
-        "value": 1.632993161855452,
+        "value": 1.632993221282959,
         "sources": [
           "1_1",
           "1_3",
@@ -120,7 +120,7 @@
   }
 ];
         const lines = [
-  "a = xp.reshape(xp.arange(6), (3, 2))",
+  "a = xp.reshape(xp.arange(6, dtype=xp.float32), (3, 2))",
   "b = xp.std(a, axis=0)"
 ];
 

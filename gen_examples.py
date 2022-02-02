@@ -186,8 +186,8 @@ def add_example():
     return a, b, c
 
 def add_broadcast_example():
-    a = xp.asarray([0, 1, 2, 3, 4])
-    b = xp.ones((1,))
+    a = xp.asarray([0, 1, 2, 3, 4], dtype=xp.int32)
+    b = xp.ones((1,), dtype=xp.int32)
     c = xp.add(a, b)
     return a, b, c
 
@@ -206,7 +206,7 @@ def max_example():
     return a, b
 
 def mean_example():
-    a = xp.reshape(xp.arange(6), (3, 2))
+    a = xp.reshape(xp.arange(6, dtype=xp.float32), (3, 2))
     b = xp.mean(a, axis=0)
     return a, b
 
@@ -221,7 +221,7 @@ def prod_example():
     return a, b
 
 def std_example():
-    a = xp.reshape(xp.arange(6), (3, 2))
+    a = xp.reshape(xp.arange(6, dtype=xp.float32), (3, 2))
     b = xp.std(a, axis=0)
     return a, b
 
@@ -231,7 +231,7 @@ def sum_example():
     return a, b
 
 def var_example():
-    a = xp.reshape(xp.arange(6), (3, 2))
+    a = xp.reshape(xp.arange(6, dtype=xp.float32), (3, 2))
     b = xp.var(a, axis=0)
     return a, b
 
