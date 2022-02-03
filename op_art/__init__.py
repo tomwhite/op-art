@@ -7,7 +7,7 @@ except ImportError:
 
 from ._constants import e, inf, nan, pi
 
-from ._array_object import reset_ids
+from ._array_object import array_context
 
 from ._data_type_functions import astype, broadcast_arrays, broadcast_to, can_cast, finfo, iinfo, result_type
 

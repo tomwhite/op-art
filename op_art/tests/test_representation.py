@@ -1,16 +1,15 @@
 from dataclasses import asdict
 
 import numpy as np
-import op_art as opart
+from op_art import array_context
 import op_art as xp
 import pytest
 from numpy.testing import assert_array_equal
 
 from op_art._visualization import rewrite_representation, _get_representation
 
+@array_context()
 def test_representation():
-    opart.reset_ids()
-
     a = xp.arange(6)
  
     assert_array_equal(a.arr, np.arange(6))
@@ -24,9 +23,8 @@ def test_representation():
         id="0_0", index=(0,), value=0, sources=None
     )
 
+@array_context()
 def test_representation_multiple_sources():
-    opart.reset_ids()
-    
     a = xp.ones((1, 2))
     b = xp.ones((1, 2))
     c = xp.add(a, b)
@@ -46,9 +44,8 @@ def test_representation_multiple_sources():
         id="2_1", index=(0, 1), value=2, sources=["0_1", "1_1"]
     )
 
+@array_context()
 def test_rewrite_representation():
-    opart.reset_ids()
-
     a = xp.arange(6)
     b = xp.reshape(a, (3, 2))
 
@@ -65,8 +62,7 @@ def test_rewrite_representation():
     )
 
 @pytest.mark.xfail(reason="Implement in viz code")
+@array_context()
 def test_4d_not_supported():
-    opart.reset_ids()
-
     with pytest.raises(NotImplementedError):
         xp.ones((2, 2, 2, 2))

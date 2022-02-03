@@ -1,11 +1,10 @@
 import numpy as np
-import op_art as opart
+from op_art import array_context
 import op_art as xp
 from numpy.testing import assert_array_equal
 
+@array_context()
 def test_broadcast_to():
-    opart.reset_ids()
-
     a = xp.ones((1,))
     b = xp.broadcast_to(a, (1, 2))
 

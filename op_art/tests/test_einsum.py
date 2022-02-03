@@ -1,11 +1,10 @@
 import numpy as np
-import op_art as opart
+from op_art import array_context
 import op_art as xp
 from numpy.testing import assert_array_equal
 
+@array_context()
 def test_einsum():
-    opart.reset_ids()
-
     a = xp.asarray([[1, 2], [3, 4]])
     b = xp.asarray([[1, 2], [3, 4]])
     c = xp.einsum("ij,jk->ik", a, b)

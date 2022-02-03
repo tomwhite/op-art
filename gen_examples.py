@@ -387,8 +387,8 @@ if __name__ == "__main__":
         for example in functions:
             example_name = example.__name__.replace("_example", "")
 
-            op_art.reset_ids()
-            vars = example()
+            with op_art.array_context():
+                vars = example()
 
-            lines = op_art.get_source(example)
-            op_art.write_html(f"docs/{category}/{example_name}.html", vars, lines, base_url="..")
+                lines = op_art.get_source(example)
+                op_art.write_html(f"docs/{category}/{example_name}.html", vars, lines, base_url="..")

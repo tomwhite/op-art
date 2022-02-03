@@ -10,7 +10,7 @@ from typing import Any, Tuple
 import numpy as np
 import numpy.array_api as nxp
 
-from . import _array_object
+from ._array_object import get_arrays
 
 @dataclass()
 class CellRepresentation:
@@ -62,7 +62,8 @@ def _get_representation(array):
     return ArrayRepresentation(array.id, arr.dtype.kind, arr.ndim, arr.shape, tuple(cells))
 
 def get_array_id_to_representation():
-    return {id: _get_representation(array) for id, array in _array_object.id_to_array.items()}
+    # TODO: consider tracking graph of arrays to get connected part to cut down number processed in rewrite_sources
+    return {id: _get_representation(array) for id, array in get_arrays().items()}
 
 def _rewrite_sources(source_ids, visible_ids, cell_id_to_sources):
     if source_ids is None:

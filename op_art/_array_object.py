@@ -1,3 +1,5 @@
+from contextlib import contextmanager
+from contextvars import ContextVar
 import itertools
 import json
 import numpy as np
@@ -5,25 +7,40 @@ import numpy.array_api as nxp
 
 from ._dtypes import _boolean_dtypes, _floating_dtypes
 
-id_gen = itertools.count()
-id_to_array = {}
+# Each array is assigned an ID that is unique within a context object.
+# There is a global context that is used by default, but users may also use
+# an array_context to isolate IDs and arrays (e.g. for the purposes of testing).
 
-# TODO: use a context manager or similar for this
-def reset_ids():
-    global id_gen
-    global id_to_array
-    id_gen = itertools.count()
-    id_to_array = {}
+def new_context():
+    return {"id_gen": itertools.count(), "id_to_array": {}}
+
+ctx = ContextVar("id", default=new_context())
+
+def gen_id():
+    # Get the next array ID in the current context
+    return next(ctx.get()["id_gen"])
+
+def get_arrays():
+    # Get a mapping of IDs to arrays in the current context
+    return ctx.get()["id_to_array"]
+
+@contextmanager
+def array_context():
+    token = ctx.set(new_context())
+    try:
+        yield
+    finally:
+        ctx.reset(token)
 
 class Array:
-    def __init__(self, arr, src_arr_ids=None, src_offsets=None, *, id=None):
+    def __init__(self, arr, src_arr_ids=None, src_offsets=None):
         if isinstance(arr, np.ndarray):
             raise ValueError("can't be ndarray")
         if isinstance(arr, np.generic):
             # Convert the array scalar to a 0-D array
             arr = np.asarray(arr)
         self.arr = arr
-        self.id = id if id is not None else next(id_gen)
+        self.id = gen_id()
         self.arr_ids = nxp.broadcast_to(nxp.asarray(self.id, dtype=nxp.int32), self.arr.shape)
         self.offsets = nxp.arange(0, arr.size, dtype=nxp.int32)
         self.offsets = nxp.reshape(self.offsets, arr.shape)
@@ -33,7 +50,7 @@ class Array:
         if self.src_arr_ids is not None and self.arr.ndim == self.src_arr_ids.ndim:
             self.src_arr_ids = nxp.expand_dims(self.src_arr_ids, axis=-1)
             self.src_offsets = nxp.expand_dims(self.src_offsets, axis=-1)
-        id_to_array[self.id] = self
+        get_arrays()[self.id] = self
   
     @property
     def device(self):

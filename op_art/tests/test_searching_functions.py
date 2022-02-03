@@ -1,11 +1,10 @@
 import numpy as np
-import op_art as opart
+from op_art import array_context
 import op_art as xp
 from numpy.testing import assert_array_equal
 
+@array_context()
 def test_argmax():
-    opart.reset_ids()
-
     a = xp.arange(6)
     a = xp.reshape(a, (3, 2))
 
@@ -16,9 +15,8 @@ def test_argmax():
     assert_array_equal(b.src_arr_ids, [[1, 1, 1], [1, 1, 1]])
     assert_array_equal(b.src_offsets, [[0, 2, 4], [1, 3, 5]])
 
+@array_context()
 def test_nonzero():
-    opart.reset_ids()
-
     a = xp.asarray([[3, 0, 0], [0, 4, 0], [5, 6, 0]])
     b, c = xp.nonzero(a)
 
@@ -34,9 +32,8 @@ def test_nonzero():
     assert_array_equal(c.src_arr_ids, [[0], [0], [0], [0]])
     assert_array_equal(c.src_offsets, [[0], [4], [6], [7]])
 
+@array_context()
 def test_where():
-    opart.reset_ids()
-
     a = xp.asarray([True, False, True, True])
     b = xp.asarray([1, 2, 3, 4])
     c = xp.asarray([9, 8, 7, 6])

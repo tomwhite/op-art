@@ -1,11 +1,10 @@
 import numpy as np
-import op_art as opart
+from op_art import array_context
 import op_art as xp
 from numpy.testing import assert_array_equal
 
+@array_context()
 def test_arange():
-    opart.reset_ids()
-
     a = xp.arange(6)
 
     assert_array_equal(a.arr, np.arange(6))
@@ -14,9 +13,8 @@ def test_arange():
     assert a.src_arr_ids == None
     assert a.src_offsets == None
 
+@array_context()
 def test_meshgrid():
-    opart.reset_ids()
-
     a = xp.asarray([1, 2, 3, 4])
     b = xp.asarray([5, 6, 7])
     c, d = xp.meshgrid(a, b)
@@ -30,9 +28,8 @@ def test_meshgrid():
     assert_array_equal(np.asarray(d.src_arr_ids).squeeze(), [[1, 1, 1, 1], [1, 1, 1, 1], [1, 1, 1, 1]])
     assert_array_equal(np.asarray(d.src_offsets).squeeze(), [[0, 0, 0, 0], [1, 1, 1, 1], [2, 2, 2, 2]])
 
+@array_context()
 def test_ones():
-    opart.reset_ids()
-
     a = xp.ones((1, 2))
 
     assert_array_equal(a.arr, np.ones((1, 2)))
@@ -41,9 +38,8 @@ def test_ones():
     assert a.src_arr_ids == None
     assert a.src_offsets == None
 
+@array_context()
 def test_tril():
-    opart.reset_ids()
-
     a = xp.asarray([[1, 2, 3], [4, 5, 6], [7, 8, 9]])
     b = xp.tril(a)
 
@@ -51,9 +47,8 @@ def test_tril():
     assert_array_equal(np.asarray(b.src_arr_ids).squeeze(), [[0, -1, -1], [0, 0, -1], [0, 0, 0]])
     assert_array_equal(np.asarray(b.src_offsets).squeeze(), [[0, -1, -1], [3, 4, -1], [6, 7, 8]])
 
+@array_context()
 def test_triu():
-    opart.reset_ids()
-
     a = xp.asarray([[1, 2, 3], [4, 5, 6], [7, 8, 9]])
     b = xp.triu(a)
 
@@ -61,9 +56,8 @@ def test_triu():
     assert_array_equal(np.asarray(b.src_arr_ids).squeeze(), [[0, 0, 0], [-1, 0, 0], [-1, -1, 0]])
     assert_array_equal(np.asarray(b.src_offsets).squeeze(), [[0, 1, 2], [-1, 4, 5], [-1, -1, 8]])
 
+@array_context()
 def test_tril_3d():
-    opart.reset_ids()
-
     a = xp.arange(1, 19)
     a = xp.reshape(a, (2, 3, 3))
     b = xp.tril(a)

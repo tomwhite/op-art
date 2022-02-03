@@ -1,11 +1,10 @@
 import numpy as np
-import op_art as opart
+from op_art import array_context
 import op_art as xp
 from numpy.testing import assert_array_equal
 
+@array_context()
 def test_matmul_1x1():
-    opart.reset_ids()
-
     a = xp.asarray([1, 2, 3])
     b = xp.asarray([4, 5, 6])
     c = xp.matmul(a, b)
@@ -15,9 +14,8 @@ def test_matmul_1x1():
     assert_array_equal(c.src_arr_ids, [0, 0, 0, 1, 1, 1])
     assert_array_equal(c.src_offsets, [0, 1, 2, 0, 1, 2])
 
+@array_context()
 def test_matmul_1x2():
-    opart.reset_ids()
-
     a = xp.asarray([1, 2, 3])
     b = xp.asarray([[5, 1], [0, 3], [2, 4]])
     c = xp.matmul(a, b)
@@ -27,9 +25,8 @@ def test_matmul_1x2():
     assert_array_equal(c.src_arr_ids, [[0, 0, 0, 1, 1, 1], [0, 0, 0, 1, 1, 1]])
     assert_array_equal(c.src_offsets, [[0, 1, 2, 0, 2, 4], [0, 1, 2, 1, 3, 5]])
 
+@array_context()
 def test_matmul_2x1():
-    opart.reset_ids()
-
     a = xp.asarray([[0, 1, 2], [3, 4, 5]])
     b = xp.asarray([1, 2, 3])
     c = xp.matmul(a, b)
@@ -39,9 +36,8 @@ def test_matmul_2x1():
     assert_array_equal(c.src_arr_ids, [[0, 0, 0, 1, 1, 1], [0, 0, 0, 1, 1, 1]])
     assert_array_equal(c.src_offsets, [[0, 1, 2, 0, 1, 2], [3, 4, 5, 0, 1, 2]])
 
+@array_context()
 def test_matmul_2x2():
-    opart.reset_ids()
-
     a = xp.asarray([[0, 1, 2], [3, 4, 5]])
     b = xp.asarray([[5, 1], [0, 3], [2, 4]])
     c = xp.matmul(a, b)
@@ -50,10 +46,8 @@ def test_matmul_2x2():
     assert_array_equal(c.src_arr_ids, [[[0, 0, 0, 1, 1, 1], [0, 0, 0, 1, 1, 1]], [[0, 0, 0, 1, 1, 1], [0, 0, 0, 1, 1, 1]]])
     assert_array_equal(c.src_offsets, [[[0, 1, 2, 0, 2, 4], [0, 1, 2, 1, 3, 5]], [[3, 4, 5, 0, 2, 4], [3, 4, 5, 1, 3, 5]]])
 
-
+@array_context()
 def test_tensordot():
-    opart.reset_ids()
-
     a = xp.arange(60)
     a = xp.reshape(a, (3, 4, 5))
     b = xp.arange(24)
@@ -64,9 +58,8 @@ def test_tensordot():
     b = np.arange(24).reshape(4,3,2)
     assert_array_equal(c.arr, np.tensordot(a, b, axes=([1, 0], [0, 1])))
 
+@array_context()
 def test_matrix_transpose():
-    opart.reset_ids()
-
     a = xp.arange(6)
     a = xp.reshape(a, (3, 2))
     b = xp.matrix_transpose(a)

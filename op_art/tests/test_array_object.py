@@ -1,11 +1,10 @@
 import numpy as np
-import op_art as opart
+from op_art import array_context
 import op_art as xp
 from numpy.testing import assert_array_equal
 
+@array_context()
 def test_transpose_attr():
-    opart.reset_ids()
-
     a = xp.arange(6)
     b = xp.reshape(a, (3, 2))
     c = b.T
@@ -16,9 +15,8 @@ def test_transpose_attr():
     assert_array_equal(c.src_arr_ids, [[[1], [1], [1]], [[1], [1], [1]]])
     assert_array_equal(c.src_offsets, [[[0], [2], [4]], [[1], [3], [5]]])
 
+@array_context()
 def test_getitem_single_axis():
-    opart.reset_ids()
-
     a = xp.arange(6)
     b = a[1:3]
 
@@ -28,9 +26,8 @@ def test_getitem_single_axis():
     assert_array_equal(b.src_arr_ids, [[0], [0]])
     assert_array_equal(b.src_offsets, [[1], [2]])
 
+@array_context()
 def test_getitem_boolean_array():
-    opart.reset_ids()
-
     a = xp.arange(6)
     b = xp.asarray([True, False, True, False, True, False])
     c = a[b]
@@ -41,9 +38,8 @@ def test_getitem_boolean_array():
     assert_array_equal(c.src_arr_ids, [[0], [0], [0]])
     assert_array_equal(c.src_offsets, [[0], [2], [4]])
 
+@array_context()
 def test_setitem():
-    opart.reset_ids()
-
     a = xp.arange(3)
     b = xp.ones((3, 2))
     b[:, 1] = a
@@ -57,9 +53,8 @@ def test_setitem():
     assert_array_equal(b.src_arr_ids, [[-1, 0], [-1, 0], [-1, 0]])
     assert_array_equal(b.src_offsets, [[-1, 0], [-1, 1], [-1, 2]])
 
+@array_context()
 def test_setitem_multiple_sources():
-    opart.reset_ids()
-
     a = xp.ones((3, 2))
     b = xp.ones((3, 2))
     c = xp.add(a, b)
@@ -75,18 +70,16 @@ def test_setitem_multiple_sources():
     assert_array_equal(c.src_arr_ids, [[[0, 1], [3, -1]], [[0, 1], [3, -1]], [[0, 1], [3, -1]]])
     assert_array_equal(c.src_offsets, [[[0, 0], [0, -1]], [[2, 2], [1, -1]], [[4, 4], [2, -1]]])
 
+@array_context()
 def test_setitem_edge_case():
-    opart.reset_ids()
-
     a = xp.asarray(False)
     b = xp.asarray(False)
     b[a] = False
 
     assert_array_equal(b.src_arr_ids, [-1])
 
+@array_context()
 def test_add():
-    opart.reset_ids()
-
     a = xp.ones((1, 2))
     b = xp.ones((1, 2))
     c = a + b
@@ -95,9 +88,8 @@ def test_add():
     assert_array_equal(c.src_arr_ids, [[[0, 1], [0, 1]]])
     assert_array_equal(c.src_offsets, [[[0, 0], [1, 1]]])
 
+@array_context()
 def test_add_inplace():
-    opart.reset_ids()
-
     a = xp.ones((1, 2))
     b = xp.ones((1, 2))
 

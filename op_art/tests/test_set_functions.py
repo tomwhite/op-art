@@ -1,11 +1,10 @@
 import numpy as np
-import op_art as opart
+from op_art import array_context
 import op_art as xp
 from numpy.testing import assert_array_equal
 
+@array_context()
 def test_unique_values():
-    opart.reset_ids()
-
     a = xp.asarray([2, 2, 3, 5, 1, 1])
     b = xp.unique_values(a)
 
@@ -14,10 +13,8 @@ def test_unique_values():
     assert_array_equal(b.src_arr_ids, [[0, 0], [0, 0], [0, -1], [0, -1]])
     assert_array_equal(b.src_offsets, [[4, 5], [0, 1], [2, -1], [3, -1]])
 
-
+@array_context()
 def test_unique_counts():
-    opart.reset_ids()
-
     a = xp.asarray([2, 2, 3, 5, 1, 1])
     b, c = xp.unique_counts(a)
 
@@ -33,9 +30,8 @@ def test_unique_counts():
     assert_array_equal(c.src_arr_ids, [[0, 0], [0, 0], [0, -1], [0, -1]])
     assert_array_equal(c.src_offsets, [[4, 5], [0, 1], [2, -1], [3, -1]])
 
+@array_context()
 def test_unique_inverse():
-    opart.reset_ids()
-
     a = xp.asarray([2, 2, 3, 5, 1, 1])
     b, c = xp.unique_inverse(a)
 
@@ -51,9 +47,8 @@ def test_unique_inverse():
     assert_array_equal(c.src_arr_ids, [[0], [0], [0], [0], [0], [0]])
     assert_array_equal(c.src_offsets, [[0], [1], [2], [3], [4], [5]])
 
+@array_context()
 def test_unique_all():
-    opart.reset_ids()
-
     a = xp.asarray([2, 2, 3, 5, 1, 1])
     b, c, d, e = xp.unique_all(a)
 
@@ -79,9 +74,8 @@ def test_unique_all():
     assert_array_equal(e.src_arr_ids, [[0, 0], [0, 0], [0, -1], [0, -1]])
     assert_array_equal(e.src_offsets, [[4, 5], [0, 1], [2, -1], [3, -1]])
 
+@array_context()
 def test_unique_2d():
-    opart.reset_ids()
-
     a = xp.asarray([2, 2, 3, 5, 1, 1])
     a = xp.reshape(a, (2, 3))
     b, c, d, e = xp.unique_all(a)
