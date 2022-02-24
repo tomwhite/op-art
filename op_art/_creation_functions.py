@@ -6,8 +6,6 @@ import numpy.array_api as nxp
 
 from ._array_object import Array
 
-# device is not supported
-
 def arange(start, /, stop=None, step=1, *, dtype=None, device=None):
     arr = nxp.arange(start, stop, step, dtype=dtype, device=device)
     return Array(arr)
