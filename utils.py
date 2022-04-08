@@ -1,5 +1,7 @@
 import builtins
+
 import numpy as np
+
 
 def index_to_offset(arr, index):
     return builtins.sum((np.array(index) * arr.strides).tolist())

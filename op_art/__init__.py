@@ -1,3 +1,4 @@
+# flake8: noqa
 try:
     from ._jupyter import init_jupyter
 
@@ -6,36 +7,8 @@ except ImportError:
     pass
 
 
-from ._constants import e, inf, nan, pi
-
 from ._array_object import array_context
-
-from ._data_type_functions import (
-    astype,
-    broadcast_arrays,
-    broadcast_to,
-    can_cast,
-    finfo,
-    iinfo,
-    result_type,
-)
-
-from ._dtypes import (
-    int8,
-    int16,
-    int32,
-    int64,
-    uint8,
-    uint16,
-    uint32,
-    uint64,
-    float32,
-    float64,
-    bool,
-)
-
-from ._einsum import einsum
-
+from ._constants import e, inf, nan, pi
 from ._creation_functions import (
     arange,
     asarray,
@@ -54,18 +27,29 @@ from ._creation_functions import (
     zeros,
     zeros_like,
 )
-
-from ._manipulation_functions import (
-    concat,
-    expand_dims,
-    flip,
-    permute_dims,
-    reshape,
-    roll,
-    squeeze,
-    stack,
+from ._data_type_functions import (
+    astype,
+    broadcast_arrays,
+    broadcast_to,
+    can_cast,
+    finfo,
+    iinfo,
+    result_type,
 )
-
+from ._dtypes import (
+    bool,
+    float32,
+    float64,
+    int8,
+    int16,
+    int32,
+    int64,
+    uint8,
+    uint16,
+    uint32,
+    uint64,
+)
+from ._einsum import einsum
 from ._elementwise_functions import (
     abs,
     acos,
@@ -77,8 +61,8 @@ from ._elementwise_functions import (
     atan2,
     atanh,
     bitwise_and,
-    bitwise_left_shift,
     bitwise_invert,
+    bitwise_left_shift,
     bitwise_or,
     bitwise_right_shift,
     bitwise_xor,
@@ -117,24 +101,27 @@ from ._elementwise_functions import (
     sign,
     sin,
     sinh,
-    square,
     sqrt,
+    square,
     subtract,
     tan,
     tanh,
     trunc,
 )
-
-from ._statistical_functions import max, mean, min, prod, std, sum, var
-
 from ._linear_algebra_functions import matmul, matrix_transpose, tensordot, vecdot
-
+from ._manipulation_functions import (
+    concat,
+    expand_dims,
+    flip,
+    permute_dims,
+    reshape,
+    roll,
+    squeeze,
+    stack,
+)
 from ._searching_functions import argmax, argmin, nonzero, where
-
-from ._sorting_functions import argsort, sort
-
 from ._set_functions import unique_all, unique_counts, unique_inverse, unique_values
-
+from ._sorting_functions import argsort, sort
+from ._statistical_functions import max, mean, min, prod, std, sum, var
 from ._utility_functions import all, any
-
 from ._visualization import arrays_to_html, get_source, visualize, write_html

@@ -1,7 +1,8 @@
 import numpy as np
-from op_art import array_context
-import op_art as xp
 from numpy.testing import assert_array_equal
+
+import op_art as xp
+from op_art import array_context
 
 
 @array_context()
@@ -11,8 +12,8 @@ def test_arange():
     assert_array_equal(a.arr, np.arange(6))
     assert np.all(a.arr_ids == 0)
     assert_array_equal(a.offsets, [0, 1, 2, 3, 4, 5])
-    assert a.src_arr_ids == None
-    assert a.src_offsets == None
+    assert a.src_arr_ids is None
+    assert a.src_offsets is None
 
 
 @array_context()
@@ -46,8 +47,8 @@ def test_ones():
     assert_array_equal(a.arr, np.ones((1, 2)))
     assert np.all(a.arr_ids == 0)
     assert_array_equal(a.offsets, [[0, 1]])
-    assert a.src_arr_ids == None
-    assert a.src_offsets == None
+    assert a.src_arr_ids is None
+    assert a.src_offsets is None
 
 
 @array_context()

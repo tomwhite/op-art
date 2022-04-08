@@ -1,7 +1,8 @@
-from contextlib import contextmanager
-from contextvars import ContextVar
 import itertools
 import json
+from contextlib import contextmanager
+from contextvars import ContextVar
+
 import numpy as np
 import numpy.array_api as nxp
 

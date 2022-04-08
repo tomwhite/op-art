@@ -1,12 +1,12 @@
 from dataclasses import asdict
 
 import numpy as np
-from op_art import array_context
-import op_art as xp
 import pytest
 from numpy.testing import assert_array_equal
 
-from op_art._visualization import rewrite_representation, _get_representation
+import op_art as xp
+from op_art import array_context
+from op_art._visualization import _get_representation, rewrite_representation
 
 
 @array_context()

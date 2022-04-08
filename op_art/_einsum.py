@@ -5,13 +5,14 @@ import numpy as np
 import numpy.array_api as nxp
 from numpy.compat import basestring
 
+from ._array_object import Array
+
 # from numpy.core.einsumfunc import _parse_einsum_input
 
-from ._array_object import Array
-from ._dtypes import _numeric_dtypes
 
 einsum_symbols = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
 einsum_symbols_set = set(einsum_symbols)
+
 
 # TODO improve
 def asarray(o):
@@ -67,7 +68,7 @@ def _parse_einsum_input(operands):
         tmp_operands = list(operands)
         operand_list = []
         subscript_list = []
-        for p in range(len(operands) // 2):
+        for _p in range(len(operands) // 2):
             operand_list.append(tmp_operands.pop(0))
             subscript_list.append(tmp_operands.pop(0))
 

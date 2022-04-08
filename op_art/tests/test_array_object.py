@@ -1,7 +1,8 @@
 import numpy as np
-from op_art import array_context
-import op_art as xp
 from numpy.testing import assert_array_equal
+
+import op_art as xp
+from op_art import array_context
 
 
 @array_context()
@@ -107,8 +108,8 @@ def test_add_inplace():
 
     assert np.all(a.arr_ids == 0)
     assert_array_equal(a.offsets, [[0, 1]])
-    assert a.src_arr_ids == None
-    assert a.src_offsets == None
+    assert a.src_arr_ids is None
+    assert a.src_offsets is None
 
     a += b
 

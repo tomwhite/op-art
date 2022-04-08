@@ -1,7 +1,8 @@
 import numpy as np
-from op_art import array_context
-import op_art as xp
 from numpy.testing import assert_array_equal
+
+import op_art as xp
+from op_art import array_context
 
 
 @array_context()

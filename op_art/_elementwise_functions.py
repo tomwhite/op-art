@@ -3,10 +3,9 @@
 
 # These all follow the same pattern, according to whether the function is unary or binary.
 
-import numpy as np
 import numpy.array_api as nxp
 
-from ._array_object import _elementwise_unary_operation, _elementwise_binary_operation
+from ._array_object import _elementwise_binary_operation, _elementwise_unary_operation
 from ._dtypes import _integer_dtypes
 
 

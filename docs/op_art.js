@@ -152,7 +152,7 @@ define("op_art", ["d3"], function (d3) {
             valuesAsText.push(...vals);
           }
         }
-        max = Math.max(...computeTextWidths(container, valuesAsText));  
+        max = Math.max(...computeTextWidths(container, valuesAsText));
       }
       const cellWidth = Math.max(minCellWidth, max);
       const cellHeight = minCellWidth;
@@ -344,9 +344,9 @@ define("op_art", ["d3"], function (d3) {
     function frontToBack(a, b) {
       return b.index[0] - a.index[0];
     }
-  
+
     const t = g.transition().delay(delay).duration(duration);
-  
+
     if (typeof cells[0].value !== 'undefined') { // array-api
       const cellElts = g
         .selectAll(".cell")
@@ -443,7 +443,7 @@ define("op_art", ["d3"], function (d3) {
             exit.call((exit) => exit.transition(t).attr("fill", "white").remove()) // fade out
         )
         .attr("class", "cell cell-rect");
-      cellElts.sort(frontToBack);      
+      cellElts.sort(frontToBack);
     }
   }
 
@@ -499,7 +499,7 @@ define("op_art", ["d3"], function (d3) {
           cell.height = Math.max((indexToY(cell.shape, o.shape) - 0.1) * cellHeight, minChunkSize);
           cell.fill = colour(1);
           // TODO: format indexes as Python tuples
-          cell.title = `Chunk\nindex: ${formatIndex(cell.index)}\nshape: ${formatIndex(cell.shape)}\noffset: ${formatIndex(cell.offset)}\nbytes: ${cell.bytes}`;  
+          cell.title = `Chunk\nindex: ${formatIndex(cell.index)}\nshape: ${formatIndex(cell.shape)}\noffset: ${formatIndex(cell.offset)}\nbytes: ${cell.bytes}`;
         }
       }
       o.x = xOffset;
@@ -509,14 +509,14 @@ define("op_art", ["d3"], function (d3) {
           text: lines[i],
           x: xOffset,
           y: 0
-        });  
+        });
         xOffset += objectWidths[i];
       } else { // top to bottom
         codeLines.push({
           text: lines[i],
           x: 0,
           y: yOffset
-        });  
+        });
         yOffset += objectHeights[i];
       }
     }

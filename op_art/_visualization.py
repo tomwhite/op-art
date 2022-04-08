@@ -1,9 +1,9 @@
 # Functions for visualizing array operations using HTML and JavaScript
 
-from dataclasses import asdict, dataclass
 import inspect
 import json
 import os
+from dataclasses import asdict, dataclass
 from textwrap import dedent
 from typing import Any, Tuple
 
@@ -222,8 +222,9 @@ def get_source(fn):
 
 
 def visualize(*arrays, animate=True, rankdir="TB", show_values=True):
-    from IPython.display import display, Javascript
     import inspect
+
+    from IPython.display import Javascript, display
 
     frame = inspect.currentframe()
     frame = frame.f_back  # go back one in the stack

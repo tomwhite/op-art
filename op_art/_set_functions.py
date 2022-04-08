@@ -1,9 +1,9 @@
 # Set Functions
 # https://data-apis.org/array-api/latest/API_specification/set_functions.html
 
-import numpy as np
-
 from typing import NamedTuple
+
+import numpy as np
 
 from ._array_object import Array
 
