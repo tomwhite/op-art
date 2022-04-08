@@ -1,7 +1,9 @@
 import pkgutil
 
+
 def init_jupyter():
     from IPython.display import display, Javascript, HTML
+
     js_data = pkgutil.get_data(__name__, "web/op_art.js").decode()
     css_data = pkgutil.get_data(__name__, "web/op_art.css").decode()
 

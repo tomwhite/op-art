@@ -6,12 +6,14 @@ from numpy import array_api as nxp
 
 from ._array_object import Array, _structural_operation
 
+
 def astype(x, dtype, /, *, copy=True):
     if not copy and dtype == x.dtype:
         return x
     xp = x.arr.__array_namespace__()
     arr = xp.astype(x.arr, dtype, copy=copy)
     return Array(arr, x.arr_ids, x.offsets)
+
 
 def broadcast_arrays(*arrays):
     # based on the numpy implementation
@@ -22,23 +24,30 @@ def broadcast_arrays(*arrays):
 
     return [broadcast_to(array, shape) for array in arrays]
 
+
 def broadcast_to(x, /, shape):
     xp = x.arr.__array_namespace__()
     return _structural_operation(x, xp.broadcast_to, shape)
+
 
 def can_cast(from_, to, /):
     if isinstance(from_, Array):
         from_ = from_.arr
     return nxp.can_cast(from_, to)
 
+
 def finfo(type, /):
     # Use numpy.array_api since there is nothing op_art specific
     return nxp.finfo(type)
+
 
 def iinfo(type, /):
     # Use numpy.array_api since there is nothing op_art specific
     return nxp.iinfo(type)
 
+
 def result_type(*arrays_and_dtypes):
     # Use numpy.array_api since there is nothing op_art specific
-    return nxp.result_type(*(a.dtype if isinstance(a, Array) else a for a in arrays_and_dtypes))
+    return nxp.result_type(
+        *(a.dtype if isinstance(a, Array) else a for a in arrays_and_dtypes)
+    )

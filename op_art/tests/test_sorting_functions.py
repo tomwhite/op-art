@@ -3,6 +3,7 @@ from op_art import array_context
 import op_art as xp
 from numpy.testing import assert_array_equal
 
+
 @array_context()
 def test_argsort():
     a = xp.asarray([5, 1, 0, 3, 2, 4])
@@ -11,6 +12,7 @@ def test_argsort():
     assert_array_equal(b.arr, np.argsort(np.array([5, 1, 0, 3, 2, 4])))
     assert_array_equal(b.src_arr_ids, [[0], [0], [0], [0], [0], [0]])
     assert_array_equal(b.src_offsets, [[2], [1], [4], [3], [5], [0]])
+
 
 @array_context()
 def test_sort():

@@ -3,6 +3,7 @@ from op_art import array_context
 import op_art as xp
 from numpy.testing import assert_array_equal
 
+
 @array_context()
 def test_unique_values():
     a = xp.asarray([2, 2, 3, 5, 1, 1])
@@ -12,6 +13,7 @@ def test_unique_values():
     assert_array_equal(b.arr, [1, 2, 3, 5])
     assert_array_equal(b.src_arr_ids, [[0, 0], [0, 0], [0, -1], [0, -1]])
     assert_array_equal(b.src_offsets, [[4, 5], [0, 1], [2, -1], [3, -1]])
+
 
 @array_context()
 def test_unique_counts():
@@ -30,6 +32,7 @@ def test_unique_counts():
     assert_array_equal(c.src_arr_ids, [[0, 0], [0, 0], [0, -1], [0, -1]])
     assert_array_equal(c.src_offsets, [[4, 5], [0, 1], [2, -1], [3, -1]])
 
+
 @array_context()
 def test_unique_inverse():
     a = xp.asarray([2, 2, 3, 5, 1, 1])
@@ -47,12 +50,18 @@ def test_unique_inverse():
     assert_array_equal(c.src_arr_ids, [[0], [0], [0], [0], [0], [0]])
     assert_array_equal(c.src_offsets, [[0], [1], [2], [3], [4], [5]])
 
+
 @array_context()
 def test_unique_all():
     a = xp.asarray([2, 2, 3, 5, 1, 1])
     b, c, d, e = xp.unique_all(a)
 
-    u0, u1, u2, u3 = np.unique(np.array([2, 2, 3, 5, 1, 1]), return_index=True, return_inverse=True, return_counts=True)
+    u0, u1, u2, u3 = np.unique(
+        np.array([2, 2, 3, 5, 1, 1]),
+        return_index=True,
+        return_inverse=True,
+        return_counts=True,
+    )
     assert_array_equal(b.arr, u0)
     assert_array_equal(c.arr, u1)
     assert_array_equal(d.arr, u2)
@@ -74,13 +83,19 @@ def test_unique_all():
     assert_array_equal(e.src_arr_ids, [[0, 0], [0, 0], [0, -1], [0, -1]])
     assert_array_equal(e.src_offsets, [[4, 5], [0, 1], [2, -1], [3, -1]])
 
+
 @array_context()
 def test_unique_2d():
     a = xp.asarray([2, 2, 3, 5, 1, 1])
     a = xp.reshape(a, (2, 3))
     b, c, d, e = xp.unique_all(a)
 
-    u0, u1, u2, u3 = np.unique(np.array([2, 2, 3, 5, 1, 1]), return_index=True, return_inverse=True, return_counts=True)
+    u0, u1, u2, u3 = np.unique(
+        np.array([2, 2, 3, 5, 1, 1]),
+        return_index=True,
+        return_inverse=True,
+        return_counts=True,
+    )
     u2 = u2.reshape(a.shape)
 
     assert_array_equal(b.arr, [1, 2, 3, 5])

@@ -11,18 +11,23 @@ from ._dtypes import _boolean_dtypes, _floating_dtypes
 # There is a global context that is used by default, but users may also use
 # an array_context to isolate IDs and arrays (e.g. for the purposes of testing).
 
+
 def new_context():
     return {"id_gen": itertools.count(), "id_to_array": {}}
 
+
 ctx = ContextVar("id", default=new_context())
+
 
 def gen_id():
     # Get the next array ID in the current context
     return next(ctx.get()["id_gen"])
 
+
 def get_arrays():
     # Get a mapping of IDs to arrays in the current context
     return ctx.get()["id_to_array"]
+
 
 @contextmanager
 def array_context():
@@ -31,6 +36,7 @@ def array_context():
         yield
     finally:
         ctx.reset(token)
+
 
 class Array:
     def __init__(self, arr, src_arr_ids=None, src_offsets=None):
@@ -41,7 +47,9 @@ class Array:
             arr = np.asarray(arr)
         self.arr = arr
         self.id = gen_id()
-        self.arr_ids = nxp.broadcast_to(nxp.asarray(self.id, dtype=nxp.int32), self.arr.shape)
+        self.arr_ids = nxp.broadcast_to(
+            nxp.asarray(self.id, dtype=nxp.int32), self.arr.shape
+        )
         self.offsets = nxp.arange(0, arr.size, dtype=nxp.int32)
         self.offsets = nxp.reshape(self.offsets, arr.shape)
         self.src_arr_ids = src_arr_ids
@@ -51,7 +59,7 @@ class Array:
             self.src_arr_ids = nxp.expand_dims(self.src_arr_ids, axis=-1)
             self.src_offsets = nxp.expand_dims(self.src_offsets, axis=-1)
         get_arrays()[self.id] = self
-  
+
     @property
     def device(self):
         return self.arr.device
@@ -63,6 +71,7 @@ class Array:
     @property
     def mT(self):
         from ._linear_algebra_functions import matrix_transpose
+
         return matrix_transpose(self)
 
     @property
@@ -80,12 +89,13 @@ class Array:
     @property
     def T(self):
         if self.ndim != 2:
-            raise ValueError("x.T requires x to have 2 dimensions. Use x.mT to transpose stacks of matrices and permute_dims() to permute dimensions.")
+            raise ValueError(
+                "x.T requires x to have 2 dimensions. Use x.mT to transpose stacks of matrices and permute_dims() to permute dimensions."
+            )
         arr = self.arr.T
         src_arr_ids = self.arr_ids.T
         src_offsets = self.offsets.T
         return Array(arr, src_arr_ids, src_offsets)
-
 
     def to_device(self, device, /, stream=None):
         return self.arr.to_device(device, stream)
@@ -95,20 +105,26 @@ class Array:
     def _promote_scalar(self, scalar):
         if isinstance(scalar, bool):
             if self.dtype not in _boolean_dtypes:
-                raise TypeError("Python bool scalars can only be promoted with bool arrays")
+                raise TypeError(
+                    "Python bool scalars can only be promoted with bool arrays"
+                )
         elif isinstance(scalar, int):
             if self.dtype in _boolean_dtypes:
-                raise TypeError("Python int scalars cannot be promoted with bool arrays")
+                raise TypeError(
+                    "Python int scalars cannot be promoted with bool arrays"
+                )
         elif isinstance(scalar, float):
             if self.dtype not in _floating_dtypes:
-                raise TypeError("Python float scalars can only be promoted with floating-point arrays.")
+                raise TypeError(
+                    "Python float scalars can only be promoted with floating-point arrays."
+                )
         else:
             raise TypeError("'scalar' must be a Python scalar")
 
         return Array(nxp.asarray(scalar, dtype=self.dtype))
 
     def __getitem__(self, item):
-        if isinstance(item, Array): # boolean array
+        if isinstance(item, Array):  # boolean array
             # TODO: this array should be a source too
             item = item.arr
         indexed_arr = self.arr[item]
@@ -117,7 +133,7 @@ class Array:
         return Array(indexed_arr, indexed_src_arr_ids, indexed_src_offsets)
 
     def __setitem__(self, item, value):
-        if isinstance(item, Array): # boolean array
+        if isinstance(item, Array):  # boolean array
             # TODO: this array should be a source too
             item = item.arr
 
@@ -133,7 +149,10 @@ class Array:
             src_item = item
         else:
             src_item = item + (Ellipsis,)
-        if self.src_arr_ids[src_item].size > 0 and self.src_arr_ids[src_item].size > value.arr_ids.size:
+        if (
+            self.src_arr_ids[src_item].size > 0
+            and self.src_arr_ids[src_item].size > value.arr_ids.size
+        ):
             # there are more sources in self than value, so expand value arrays to match
             value_arr_ids = np.full_like(self.src_arr_ids[src_item], -1, dtype=np.int32)
             value_offsets = np.full_like(self.src_offsets[src_item], -1, dtype=np.int32)
@@ -166,6 +185,7 @@ class Array:
         if api_version is not None and not api_version.startswith("2021."):
             raise ValueError("Unrecognized array API version")
         import op_art
+
         return op_art
 
     def __bool__(self, /):
@@ -241,6 +261,7 @@ class Array:
         if isinstance(other, (int, float, bool)):
             other = self._promote_scalar(other)
         import op_art
+
         return op_art.matmul(self, other)
 
     def __mod__(self, other, /):
@@ -366,6 +387,7 @@ class Array:
         if isinstance(other, (int, float, bool)):
             other = self._promote_scalar(other)
         import op_art
+
         return op_art.matmul(other, self)
 
     def __imod__(self, other, /):
@@ -477,17 +499,22 @@ class Array:
 
     def _repr_javascript_(self):
         from ._visualization import array_to_json_dict
+
         return """
         (function(element){
             require(['op_art'], function(op_art) {
                 op_art.visualize(element.get(0), %s, [""], 1500, true);
             });
         })(element);
-        """ % json.dumps([array_to_json_dict(self, visible_ids=[self.id])])
+        """ % json.dumps(
+            [array_to_json_dict(self, visible_ids=[self.id])]
+        )
+
 
 def _elementwise_unary_operation(x, array_op):
     arr = array_op(x.arr)
     return Array(arr, x.arr_ids, x.offsets)
+
 
 # copied from https://github.com/data-apis/numpy/blob/array-api/numpy/_array_api/_array_object.py
 def _normalize_two_args(x1, x2):
@@ -515,18 +542,21 @@ def _normalize_two_args(x1, x2):
         x2 = Array(x2.arr[None])
     return (x1, x2)
 
+
 def _elementwise_binary_operation(x1, x2, array_op):
-    #x1, x2 = _normalize_two_args(x1, x2)
+    # x1, x2 = _normalize_two_args(x1, x2)
     arr = array_op(x1.arr, x2.arr)
 
     # broadcast if necessary
     from ._data_type_functions import broadcast_arrays
+
     x1_broad, x2_broad = broadcast_arrays(x1, x2)
 
     src_arr_ids = nxp.stack([x1_broad.arr_ids, x2_broad.arr_ids], axis=-1)
     src_offsets = nxp.stack([x1_broad.offsets, x2_broad.offsets], axis=-1)
 
     return Array(arr, src_arr_ids, src_offsets)
+
 
 def _elementwise_binary_operation2(x1, x2, arr):
     x1_arr_ids, x2_arr_ids = nxp.broadcast_arrays(x1.arr_ids, x2.arr_ids)
@@ -537,6 +567,7 @@ def _elementwise_binary_operation2(x1, x2, arr):
 
     return Array(arr, src_arr_ids, src_offsets)
 
+
 def _inplace_elementwise_binary_operation2(x1, x2):
     x1_arr_ids, x2_arr_ids = nxp.broadcast_arrays(x1.arr_ids, x2.arr_ids)
     x1_offsets, x2_offsets = nxp.broadcast_arrays(x1.offsets, x2.offsets)
@@ -544,12 +575,14 @@ def _inplace_elementwise_binary_operation2(x1, x2):
     x1.src_arr_ids = nxp.stack([x1_arr_ids, x2_arr_ids], axis=-1)
     x1.src_offsets = nxp.stack([x1_offsets, x2_offsets], axis=-1)
 
+
 def _structural_operation(x, array_op, *args, **kwargs):
     # Suitable for operations that change the structure of x, not its values
     arr = array_op(x.arr, *args, **kwargs)
     src_arr_ids = array_op(x.arr_ids, *args, **kwargs)
     src_offsets = array_op(x.offsets, *args, **kwargs)
     return Array(arr, src_arr_ids, src_offsets)
+
 
 def _reduction_operation(x, axis, array_op, keepdims=False, **kwargs):
     xp = x.arr.__array_namespace__()
@@ -576,6 +609,7 @@ def _reduction_operation(x, axis, array_op, keepdims=False, **kwargs):
             del axes[axis]
             axes.append(axis)
             return xp.permute_dims(arr, axes)
+
         src_arr_ids = move_axis_to_end(x.arr_ids, axis)
         src_offsets = move_axis_to_end(x.offsets, axis)
     else:
@@ -592,7 +626,6 @@ def _reduction_operation(x, axis, array_op, keepdims=False, **kwargs):
 
         src_arr_ids = move_axis_to_end(x.arr_ids, axis)
         src_offsets = move_axis_to_end(x.offsets, axis)
-        
 
     if keepdims and x.ndim > 0:
         if axis is None:

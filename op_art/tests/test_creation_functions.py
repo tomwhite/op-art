@@ -3,6 +3,7 @@ from op_art import array_context
 import op_art as xp
 from numpy.testing import assert_array_equal
 
+
 @array_context()
 def test_arange():
     a = xp.arange(6)
@@ -13,6 +14,7 @@ def test_arange():
     assert a.src_arr_ids == None
     assert a.src_offsets == None
 
+
 @array_context()
 def test_meshgrid():
     a = xp.asarray([1, 2, 3, 4])
@@ -22,11 +24,20 @@ def test_meshgrid():
     assert_array_equal(c.arr, np.meshgrid(a.arr, b.arr)[0])
     assert_array_equal(d.arr, np.meshgrid(a.arr, b.arr)[1])
 
-    assert_array_equal(np.asarray(c.src_arr_ids).squeeze(), [[0, 0, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0]])
-    assert_array_equal(np.asarray(c.src_offsets).squeeze(), [[0, 1, 2, 3], [0, 1, 2, 3], [0, 1, 2, 3]])
+    assert_array_equal(
+        np.asarray(c.src_arr_ids).squeeze(), [[0, 0, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0]]
+    )
+    assert_array_equal(
+        np.asarray(c.src_offsets).squeeze(), [[0, 1, 2, 3], [0, 1, 2, 3], [0, 1, 2, 3]]
+    )
 
-    assert_array_equal(np.asarray(d.src_arr_ids).squeeze(), [[1, 1, 1, 1], [1, 1, 1, 1], [1, 1, 1, 1]])
-    assert_array_equal(np.asarray(d.src_offsets).squeeze(), [[0, 0, 0, 0], [1, 1, 1, 1], [2, 2, 2, 2]])
+    assert_array_equal(
+        np.asarray(d.src_arr_ids).squeeze(), [[1, 1, 1, 1], [1, 1, 1, 1], [1, 1, 1, 1]]
+    )
+    assert_array_equal(
+        np.asarray(d.src_offsets).squeeze(), [[0, 0, 0, 0], [1, 1, 1, 1], [2, 2, 2, 2]]
+    )
+
 
 @array_context()
 def test_ones():
@@ -38,14 +49,20 @@ def test_ones():
     assert a.src_arr_ids == None
     assert a.src_offsets == None
 
+
 @array_context()
 def test_tril():
     a = xp.asarray([[1, 2, 3], [4, 5, 6], [7, 8, 9]])
     b = xp.tril(a)
 
     assert_array_equal(b.arr, np.tril(np.array([[1, 2, 3], [4, 5, 6], [7, 8, 9]])))
-    assert_array_equal(np.asarray(b.src_arr_ids).squeeze(), [[0, -1, -1], [0, 0, -1], [0, 0, 0]])
-    assert_array_equal(np.asarray(b.src_offsets).squeeze(), [[0, -1, -1], [3, 4, -1], [6, 7, 8]])
+    assert_array_equal(
+        np.asarray(b.src_arr_ids).squeeze(), [[0, -1, -1], [0, 0, -1], [0, 0, 0]]
+    )
+    assert_array_equal(
+        np.asarray(b.src_offsets).squeeze(), [[0, -1, -1], [3, 4, -1], [6, 7, 8]]
+    )
+
 
 @array_context()
 def test_triu():
@@ -53,8 +70,13 @@ def test_triu():
     b = xp.triu(a)
 
     assert_array_equal(b.arr, np.triu(np.array([[1, 2, 3], [4, 5, 6], [7, 8, 9]])))
-    assert_array_equal(np.asarray(b.src_arr_ids).squeeze(), [[0, 0, 0], [-1, 0, 0], [-1, -1, 0]])
-    assert_array_equal(np.asarray(b.src_offsets).squeeze(), [[0, 1, 2], [-1, 4, 5], [-1, -1, 8]])
+    assert_array_equal(
+        np.asarray(b.src_arr_ids).squeeze(), [[0, 0, 0], [-1, 0, 0], [-1, -1, 0]]
+    )
+    assert_array_equal(
+        np.asarray(b.src_offsets).squeeze(), [[0, 1, 2], [-1, 4, 5], [-1, -1, 8]]
+    )
+
 
 @array_context()
 def test_tril_3d():
@@ -63,5 +85,14 @@ def test_tril_3d():
     b = xp.tril(a)
 
     assert_array_equal(b.arr, np.tril(np.arange(1, 19).reshape(2, 3, 3)))
-    assert_array_equal(np.asarray(b.src_arr_ids).squeeze(), [[[1, -1, -1], [1, 1, -1], [1, 1, 1]], [[1, -1, -1], [1, 1, -1], [1, 1, 1]]])
-    assert_array_equal(np.asarray(b.src_offsets).squeeze(), [[[0, -1, -1], [3, 4, -1], [6, 7, 8]], [[9, -1, -1], [12, 13, -1], [15, 16, 17]]])
+    assert_array_equal(
+        np.asarray(b.src_arr_ids).squeeze(),
+        [[[1, -1, -1], [1, 1, -1], [1, 1, 1]], [[1, -1, -1], [1, 1, -1], [1, 1, 1]]],
+    )
+    assert_array_equal(
+        np.asarray(b.src_offsets).squeeze(),
+        [
+            [[0, -1, -1], [3, 4, -1], [6, 7, 8]],
+            [[9, -1, -1], [12, 13, -1], [15, 16, 17]],
+        ],
+    )

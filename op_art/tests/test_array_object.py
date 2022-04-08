@@ -3,6 +3,7 @@ from op_art import array_context
 import op_art as xp
 from numpy.testing import assert_array_equal
 
+
 @array_context()
 def test_transpose_attr():
     a = xp.arange(6)
@@ -15,6 +16,7 @@ def test_transpose_attr():
     assert_array_equal(c.src_arr_ids, [[[1], [1], [1]], [[1], [1], [1]]])
     assert_array_equal(c.src_offsets, [[[0], [2], [4]], [[1], [3], [5]]])
 
+
 @array_context()
 def test_getitem_single_axis():
     a = xp.arange(6)
@@ -25,6 +27,7 @@ def test_getitem_single_axis():
     assert_array_equal(b.offsets, [0, 1])
     assert_array_equal(b.src_arr_ids, [[0], [0]])
     assert_array_equal(b.src_offsets, [[1], [2]])
+
 
 @array_context()
 def test_getitem_boolean_array():
@@ -37,6 +40,7 @@ def test_getitem_boolean_array():
     assert_array_equal(c.offsets, [0, 1, 2])
     assert_array_equal(c.src_arr_ids, [[0], [0], [0]])
     assert_array_equal(c.src_offsets, [[0], [2], [4]])
+
 
 @array_context()
 def test_setitem():
@@ -53,6 +57,7 @@ def test_setitem():
     assert_array_equal(b.src_arr_ids, [[-1, 0], [-1, 0], [-1, 0]])
     assert_array_equal(b.src_offsets, [[-1, 0], [-1, 1], [-1, 2]])
 
+
 @array_context()
 def test_setitem_multiple_sources():
     a = xp.ones((3, 2))
@@ -67,8 +72,13 @@ def test_setitem_multiple_sources():
 
     assert np.all(c.arr_ids == 2)
     assert_array_equal(c.offsets, [[0, 1], [2, 3], [4, 5]])
-    assert_array_equal(c.src_arr_ids, [[[0, 1], [3, -1]], [[0, 1], [3, -1]], [[0, 1], [3, -1]]])
-    assert_array_equal(c.src_offsets, [[[0, 0], [0, -1]], [[2, 2], [1, -1]], [[4, 4], [2, -1]]])
+    assert_array_equal(
+        c.src_arr_ids, [[[0, 1], [3, -1]], [[0, 1], [3, -1]], [[0, 1], [3, -1]]]
+    )
+    assert_array_equal(
+        c.src_offsets, [[[0, 0], [0, -1]], [[2, 2], [1, -1]], [[4, 4], [2, -1]]]
+    )
+
 
 @array_context()
 def test_setitem_edge_case():
@@ -77,6 +87,7 @@ def test_setitem_edge_case():
     b[a] = False
 
     assert_array_equal(b.src_arr_ids, [-1])
+
 
 @array_context()
 def test_add():
@@ -87,6 +98,7 @@ def test_add():
     assert_array_equal(c.arr, np.ones((1, 2)) + np.ones((1, 2)))
     assert_array_equal(c.src_arr_ids, [[[0, 1], [0, 1]]])
     assert_array_equal(c.src_offsets, [[[0, 0], [1, 1]]])
+
 
 @array_context()
 def test_add_inplace():

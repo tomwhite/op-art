@@ -19,5 +19,5 @@ from numpy.array_api._dtypes import (
     _numeric_dtypes,
     _dtype_categories,
     _promotion_table,
-    _result_type
+    _result_type,
 )

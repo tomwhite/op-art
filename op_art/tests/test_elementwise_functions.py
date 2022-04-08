@@ -3,6 +3,7 @@ from op_art import array_context
 import op_art as xp
 from numpy.testing import assert_array_equal
 
+
 @array_context()
 def test_add():
     a = xp.ones((1, 2))
@@ -13,6 +14,7 @@ def test_add():
     assert_array_equal(c.src_arr_ids, [[[0, 1], [0, 1]]])
     assert_array_equal(c.src_offsets, [[[0, 0], [1, 1]]])
 
+
 @array_context()
 def test_add_broadcast():
     a = xp.ones((1, 2))
@@ -22,6 +24,7 @@ def test_add_broadcast():
     assert_array_equal(c.arr, np.ones((1, 2)) + np.ones((1, 2)))
     assert_array_equal(c.src_arr_ids, [[[2, 3], [2, 3]]])
     assert_array_equal(c.src_offsets, [[[0, 0], [1, 1]]])
+
 
 @array_context()
 def test_negative():

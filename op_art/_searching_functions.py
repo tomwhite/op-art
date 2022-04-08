@@ -6,13 +6,16 @@ import numpy as np
 from ._array_object import Array, _normalize_two_args, _reduction_operation
 from ._data_type_functions import broadcast_arrays
 
+
 def argmax(x, /, *, axis=None, keepdims=False):
     xp = x.arr.__array_namespace__()
     return _reduction_operation(x, axis, xp.argmax, keepdims=keepdims)
 
+
 def argmin(x, /, *, axis=None, keepdims=False):
     xp = x.arr.__array_namespace__()
     return _reduction_operation(x, axis, xp.argmin, keepdims=keepdims)
+
 
 def nonzero(x, /):
     xp = x.arr.__array_namespace__()
@@ -30,9 +33,10 @@ def nonzero(x, /):
         src_offsets = xp.asarray(np.asarray(x.offsets)[np_arrs])
     return tuple(Array(arr, src_arr_ids, src_offsets) for arr in arrs)
 
+
 def where(condition, x1, x2, /):
     xp = condition.arr.__array_namespace__()
-    #x1, x2 = _normalize_two_args(x1, x2)
+    # x1, x2 = _normalize_two_args(x1, x2)
     arr = xp.where(condition.arr, x1.arr, x2.arr)
 
     # broadcast if necessary

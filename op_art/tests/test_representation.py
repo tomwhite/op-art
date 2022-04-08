@@ -8,10 +8,11 @@ from numpy.testing import assert_array_equal
 
 from op_art._visualization import rewrite_representation, _get_representation
 
+
 @array_context()
 def test_representation():
     a = xp.arange(6)
- 
+
     assert_array_equal(a.arr, np.arange(6))
 
     representation = _get_representation(a)
@@ -22,6 +23,7 @@ def test_representation():
     assert asdict(representation.cells[0]) == dict(
         id="0_0", index=(0,), value=0, sources=None
     )
+
 
 @array_context()
 def test_representation_multiple_sources():
@@ -44,6 +46,7 @@ def test_representation_multiple_sources():
         id="2_1", index=(0, 1), value=2, sources=["0_1", "1_1"]
     )
 
+
 @array_context()
 def test_rewrite_representation():
     a = xp.arange(6)
@@ -52,14 +55,13 @@ def test_rewrite_representation():
     representation = _get_representation(b)
 
     assert asdict(representation.cells[0]) == dict(
-        id="1_0", index=(0, 0), value=0, sources=['0_0']
+        id="1_0", index=(0, 0), value=0, sources=["0_0"]
     )
 
     # make 'a' invisible and check sources is updated
     rep = rewrite_representation(representation, visible_ids=[b.id])
-    assert asdict(rep.cells[0]) == dict(
-        id="1_0", index=(0, 0), value=0, sources=None
-    )
+    assert asdict(rep.cells[0]) == dict(id="1_0", index=(0, 0), value=0, sources=None)
+
 
 @pytest.mark.xfail(reason="Implement in viz code")
 @array_context()

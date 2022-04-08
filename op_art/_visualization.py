@@ -12,6 +12,7 @@ import numpy.array_api as nxp
 
 from ._array_object import get_arrays
 
+
 @dataclass()
 class CellRepresentation:
     id: Any
@@ -57,13 +58,21 @@ def _get_representation(array):
                     cell_sources = None
                 else:
                     src_offset = array.src_offsets[src_ind]
-                    cell_sources = [f"{i}_{o}" for i, o in zip(src_arr_id, src_offset) if i != -1]
-        cells.append(CellRepresentation(cell_id, it.multi_index, x.item(), cell_sources))
-    return ArrayRepresentation(array.id, arr.dtype.kind, arr.ndim, arr.shape, tuple(cells))
+                    cell_sources = [
+                        f"{i}_{o}" for i, o in zip(src_arr_id, src_offset) if i != -1
+                    ]
+        cells.append(
+            CellRepresentation(cell_id, it.multi_index, x.item(), cell_sources)
+        )
+    return ArrayRepresentation(
+        array.id, arr.dtype.kind, arr.ndim, arr.shape, tuple(cells)
+    )
+
 
 def get_array_id_to_representation():
     # TODO: consider tracking graph of arrays to get connected part to cut down number processed in rewrite_sources
     return {id: _get_representation(array) for id, array in get_arrays().items()}
+
 
 def _rewrite_sources(source_ids, visible_ids, cell_id_to_sources):
     if source_ids is None:
@@ -74,13 +83,19 @@ def _rewrite_sources(source_ids, visible_ids, cell_id_to_sources):
         if arr_id in visible_ids:
             res.append(si)
         else:
-            res.extend(_rewrite_sources(cell_id_to_sources[si], visible_ids, cell_id_to_sources))
+            res.extend(
+                _rewrite_sources(
+                    cell_id_to_sources[si], visible_ids, cell_id_to_sources
+                )
+            )
     return res
+
 
 def rewrite_sources(source_ids, visible_ids, cell_id_to_sources):
     """Rewrite sources so none are from invisible arrays"""
     x = _rewrite_sources(source_ids, visible_ids, cell_id_to_sources)
     return x if len(x) > 0 else None
+
 
 def rewrite_representation(arr_rep, visible_ids=None, array_id_to_representation=None):
     """Rewrite representation so it doesn't include any invisible arrays"""
@@ -98,25 +113,46 @@ def rewrite_representation(arr_rep, visible_ids=None, array_id_to_representation
         new_sources = rewrite_sources(cell.sources, visible_ids, cell_id_to_sources)
         new_cell = CellRepresentation(cell.id, cell.index, cell.value, new_sources)
         new_cells.append(new_cell)
-    return ArrayRepresentation(arr_rep.id, arr_rep.kind, arr_rep.ndim, arr_rep.shape, new_cells)
+    return ArrayRepresentation(
+        arr_rep.id, arr_rep.kind, arr_rep.ndim, arr_rep.shape, new_cells
+    )
+
 
 def array_to_json_dict(array, visible_ids=None, array_id_to_representation=None):
     if array_id_to_representation is None:
         array_id_to_representation = get_array_id_to_representation()
-    return asdict(rewrite_representation(array_id_to_representation[array.id], visible_ids, array_id_to_representation))
+    return asdict(
+        rewrite_representation(
+            array_id_to_representation[array.id],
+            visible_ids,
+            array_id_to_representation,
+        )
+    )
+
 
 def arrays_to_json(arrays):
     visible_ids = [a.id for a in arrays]
     array_id_to_representation = get_array_id_to_representation()
-    return json.dumps([array_to_json_dict(a, visible_ids, array_id_to_representation) for a in arrays], indent=2)
+    return json.dumps(
+        [
+            array_to_json_dict(a, visible_ids, array_id_to_representation)
+            for a in arrays
+        ],
+        indent=2,
+    )
+
 
 def strings_to_json(strings):
     return json.dumps(strings, indent=2)
 
+
 def boolean_to_js(v):
     return "true" if v else "false"
 
-def arrays_to_html(arrays, lines, base_url=".", animate=True, rankdir="TB", show_values=True):
+
+def arrays_to_html(
+    arrays, lines, base_url=".", animate=True, rankdir="TB", show_values=True
+):
     require_js_path = f"{base_url}/require.js"
     op_art_css_path = f"{base_url}/op_art.css"
     return """<!DOCTYPE html>
@@ -146,12 +182,33 @@ def arrays_to_html(arrays, lines, base_url=".", animate=True, rankdir="TB", show
       });
     </script>
   </body>
-</html>""" % (require_js_path, op_art_css_path, base_url, arrays_to_json(arrays), strings_to_json(lines), boolean_to_js(animate), rankdir, boolean_to_js(show_values))
+</html>""" % (
+        require_js_path,
+        op_art_css_path,
+        base_url,
+        arrays_to_json(arrays),
+        strings_to_json(lines),
+        boolean_to_js(animate),
+        rankdir,
+        boolean_to_js(show_values),
+    )
 
-def write_html(filename, arrs, lines, base_url=".", animate=True, rankdir="TB", show_values=True):
+
+def write_html(
+    filename, arrs, lines, base_url=".", animate=True, rankdir="TB", show_values=True
+):
     os.makedirs(os.path.dirname(filename), exist_ok=True)
     with open(filename, "w") as f:
-        f.write(arrays_to_html(arrs, lines, base_url=base_url, animate=animate, rankdir=rankdir, show_values=show_values))
+        f.write(
+            arrays_to_html(
+                arrs,
+                lines,
+                base_url=base_url,
+                animate=animate,
+                rankdir=rankdir,
+                show_values=show_values,
+            )
+        )
 
 
 def get_source(fn):
@@ -167,14 +224,15 @@ def get_source(fn):
 def visualize(*arrays, animate=True, rankdir="TB", show_values=True):
     from IPython.display import display, Javascript
     import inspect
+
     frame = inspect.currentframe()
-    frame = frame.f_back # go back one in the stack
+    frame = frame.f_back  # go back one in the stack
     src = inspect.getsource(frame)
     src = src.strip()
     last_line = src.split("\n")[-1].strip()
     # TODO: improve
-    vars = last_line[last_line.index("(") + 1:]
-    vars = vars[:vars.index(")")]
+    vars = last_line[last_line.index("(") + 1 :]
+    vars = vars[: vars.index(")")]
     vars = [v.strip() for v in vars.split(",")]
 
     js = """(function(element){
