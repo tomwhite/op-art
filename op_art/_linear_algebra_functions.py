@@ -14,8 +14,12 @@ def matmul(x1, x2, /):
         return einsum("i,i->", x1, x2)
     elif x1.ndim == 1 and x2.ndim == 2:
         return einsum("i,ij->j", x1, x2)
+    elif x1.ndim == 1 and x2.ndim > 2:
+        return einsum("i,...ij->...j", x1, x2)
     elif x1.ndim == 2 and x2.ndim == 1:
         return einsum("ij,j->i", x1, x2)
+    elif x1.ndim > 2 and x2.ndim == 1:
+        return einsum("...ij,j->...i", x1, x2)
     else:
         return einsum("...ij,...jk->...ik", x1, x2)
 
