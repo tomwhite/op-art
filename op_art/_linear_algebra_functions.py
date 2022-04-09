@@ -1,8 +1,6 @@
 # Linear Algebra Functions
 # https://data-apis.org/array-api/latest/API_specification/linear_algebra_functions.html#
 
-# Good animations are hard to implement for these functions!
-
 from ._array_object import _structural_operation
 from ._einsum import einsum
 

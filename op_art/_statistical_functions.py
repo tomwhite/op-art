@@ -1,8 +1,6 @@
 # Statistical Functions
 # https://data-apis.org/array-api/latest/API_specification/statistical_functions.html
 
-# These all follow the same pattern.
-
 from ._array_object import _reduction_operation
 
 
@@ -43,6 +41,3 @@ def var(x, /, *, axis=None, correction=0.0, keepdims=False):
     return _reduction_operation(
         x, axis, xp.var, keepdims=keepdims, correction=correction
     )
-
-
-# TODO: it would be nice if the animation for max highlighted the maximum values (use argmax to find)
