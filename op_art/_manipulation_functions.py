@@ -30,9 +30,10 @@ def permute_dims(x, /, axes):
     return _structural_operation(x, xp.permute_dims, axes=axes)
 
 
-def reshape(x, /, shape):
+def reshape(x, /, shape, *, copy=None):
+    # TODO: copy is not supported by numpy.array_api yet
     xp = x.arr.__array_namespace__()
-    return _structural_operation(x, xp.reshape, shape)
+    return _structural_operation(x, xp.reshape, shape=shape)
 
 
 def roll(x, /, shift, *, axis=None):

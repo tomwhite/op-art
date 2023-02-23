@@ -1,4 +1,6 @@
 # flake8: noqa
+__array_api_version__ = "2021.12"
+
 try:
     from ._jupyter import init_jupyter
 
