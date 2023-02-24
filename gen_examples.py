@@ -1,7 +1,8 @@
 import shutil
 
+import array_tracker as xp
+
 import op_art
-import op_art as xp
 
 # Array object
 

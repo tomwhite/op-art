@@ -9,8 +9,7 @@ from typing import Any, Tuple
 
 import numpy as np
 import numpy.array_api as nxp
-
-from ._array_object import get_arrays
+from array_tracker._array_object import get_arrays
 
 
 @dataclass()

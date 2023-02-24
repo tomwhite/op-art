@@ -1,3 +1,4 @@
+array_tracker
 jupyter
 numpy >= 1.22
 pytest
