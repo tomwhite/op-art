@@ -21,7 +21,7 @@ See [examples](https://tomwhite.github.io/op-art) of each of the operations from
 Install in a suitable Python env with:
 
 ```bash
-pip install git+https://github.com/tomwhite/op-art.git jupyter
+pip install git+https://github.com/tomwhite/op-art.git 'notebook==6.*'
 ```
 
 Start Jupyter by typing `jupyter notebook` and create a new Python 3 notebook.

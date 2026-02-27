@@ -8,7 +8,7 @@ from textwrap import dedent
 from typing import Any, Tuple
 
 import numpy as np
-import numpy.array_api as nxp
+import array_api_compat.numpy as nxp
 from array_tracker._array_object import get_arrays
 
 

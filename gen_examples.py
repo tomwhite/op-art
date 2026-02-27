@@ -50,7 +50,6 @@ def boolean_array_example():
     c = a[b]
     return a, b, c
 
-
 indexing = [
     dimensions_example,
     single_axis_example,
@@ -58,23 +57,25 @@ indexing = [
     boolean_array_example,
 ]
 
-# Data type functions
+# Indexing functions
 
 
-def broadcast_arrays_example():
-    a = xp.asarray([[1, 2, 3]])
-    b = xp.asarray([[4], [5]])
-    c, d = xp.broadcast_arrays(a, b)
-    return a, b, c, d
+def take_example():
+    a = xp.asarray([4, 3, 5, 7, 6, 8])
+    b = xp.asarray([0, 1, 4])
+    c = xp.take(a, b, axis=0)
+    return a, b, c
 
 
-def broadcast_to_example():
-    a = xp.ones((1,))
-    b = xp.broadcast_to(a, (1, 2))
-    return a, b
+def take_along_axis_example():
+    a = xp.asarray([[10, 30, 20], [60, 40, 50]])
+    b = xp.asarray([[0, 2, 1], [1, 2, 0]])
+    c = xp.take_along_axis(a, b, axis=1)
+    return a, b, c
 
 
-data_type_functions = [broadcast_arrays_example, broadcast_to_example]
+indexing_functions = [take_example, take_along_axis_example]
+
 
 # Creation Functions
 
@@ -183,6 +184,19 @@ creation_functions = [
 # Manipulation Functions
 
 
+def broadcast_arrays_example():
+    a = xp.asarray([[1, 2, 3]])
+    b = xp.asarray([[4], [5]])
+    c, d = xp.broadcast_arrays(a, b)
+    return a, b, c, d
+
+
+def broadcast_to_example():
+    a = xp.ones((1,))
+    b = xp.broadcast_to(a, (1, 2))
+    return a, b
+
+
 def concat_example():
     a = xp.asarray([[1, 2], [3, 4]])
     b = xp.asarray([[5], [6]])
@@ -202,9 +216,21 @@ def flip_example():
     return a, b
 
 
+def moveaxis_example():
+    a = xp.reshape(xp.arange(24), (4, 3, 2))
+    b = xp.moveaxis(a, 0, -1)
+    return a, b
+
+
 def permute_dims_example():
     a = xp.reshape(xp.arange(24), (4, 3, 2))
     b = xp.permute_dims(a, (1, 0, 2))
+    return a, b
+
+
+def repeat_example():
+    a = xp.asarray([[1, 2], [3, 4]])
+    b = xp.repeat(a, 3, axis=1)
     return a, b
 
 
@@ -233,15 +259,33 @@ def stack_example():
     return a, b, c
 
 
+def tile_example():
+    a = xp.asarray([[1, 2], [3, 4]])
+    b = xp.tile(a, 2)
+    return a, b
+
+
+def unstack_example():
+    a = xp.asarray([[1, 2, 3], [2, 3, 4]])
+    b, c = xp.unstack(a)
+    return a, b, c
+
+
 manipulation_functions = [
+    broadcast_arrays_example,
+    broadcast_to_example,
     concat_example,
     expand_dims_example,
     flip_example,
+    moveaxis_example,
     permute_dims_example,
+    repeat_example,
     reshape_example,
     roll_example,
     squeeze_example,
     stack_example,
+    tile_example,
+    unstack_example,
 ]
 
 # Element-wise Functions
@@ -466,7 +510,13 @@ def any_example():
     return a, b
 
 
-utility_functions = [all_example, any_example]
+def diff_example():
+    a = xp.asarray([[1, 3, 6, 10], [0, 5, 6, 8]])
+    b = xp.diff(a, axis=1)
+    return a, b
+
+
+utility_functions = [all_example, any_example, diff_example]
 
 # Misc
 
@@ -484,7 +534,7 @@ misc_examples = [reshape_flip_reshape]
 all_examples = {
     "array_object": array_object,
     "indexing": indexing,
-    "data_type_functions": data_type_functions,
+    "indexing_functions": indexing_functions,
     "creation_functions": creation_functions,
     "manipulation_functions": manipulation_functions,
     "elementwise_functions": elementwise_functions,
