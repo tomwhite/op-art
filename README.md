@@ -8,7 +8,7 @@ Animated array operations.
 
 The goal of **op-art** is to help understand array operations in NumPy (and related projects) by visualizing their effect on small arrays. In particular, it helps you understand how different operations change the shapes of arrays, and how values from different cells are combined to create new arrays.
 
-The idea is to make it easy for anyone to generate visualizations for their own code with very little effort. This is achieved by providing an implementation of the new [Python array API standard](https://data-apis.org/array-api/latest/index.html) that tracks cell-level dependencies between arrays being operated on, and using that information to produce interactive animations of the operations in a code snippet. You can then switch the array namespace to `op_art` and run the same code unchanged.
+The idea is to make it easy for anyone to generate visualizations for their own code with very little effort. This is achieved by using an implementation of the [Python array API standard](https://data-apis.org/array-api/latest/index.html) called [`array-tracker`](https://github.com/tomwhite/array-tracker) that I wrote for this purpose, which tracks cell-level dependencies between arrays being operated on, and using that information to produce interactive animations of the operations in a code snippet. You can then switch the array namespace to `op_art` and run the same code unchanged.
 
 Here's a slightly more advanced [example](https://tomwhite.github.io/op-art/misc/reshape_flip_reshape.html) that runs `reshape`, then `flip`, then `reshape` on an array.
 
@@ -45,26 +45,11 @@ Note that you don't need to read anything below to use the library.
 
 ### Model
 
-A new array object is used to encapsulate the raw array data and metadata to track cell dependencies and other information to produce a visualization.
-
-Every array is an instance of `Array` (in the `op_art._array_object` namespace), which contains the underlying NumPy array, a unique ID, and four NumPy arrays used to track dependencies:
-
-- `arr_ids` - an array containing the ID in every position. It is the same shape as the main array.
-- `offsets` - an array containing the offset of every cell in the main array (as a 1-D index). It is the same shape as the main array.
-- `src_arr_ids` - an array containing the IDs of the arrays that this cell depends on. It may be `None` if there are no dependencies (for the whole array), otherwise it is the same shape as the main array, possibly with an extra dimension (in the case that there are multiple sources). For example, if the main array has shape `(3, 4)` then `src_arr_ids` would be `(3, 4, 2)` if it has two sources.
-- `src_offsets` - an array containing the offsets of the cells that this cell depends on. It has the same shape as `src_arr_ids`.
-
-`Array` implements the contract defined in the [Array object array API](https://data-apis.org/array-api/latest/API_specification/array_object.html), which includes things like the `dtype` and `shape` attributes, and methods like `__add__` for adding two arrays together, or `__neg__` for returning an array where each element is the negative value.
-
-The rest of the array API spec is also implemented in `op_art`.
-
-For each operation in the spec, the source arrays must be computed, usually in a way that depends on the nature of the operation. The advantage of using NumPy arrays for tracking dependencies is that there is often an operation that can be performed on the source arrays to transform them appropriately. For example, to implement the creation function `tril`, we can use `np.tril_indices` to pull out the relevant values from the id and offset arrays of the input array to populate the source arrays of the result. Things are not always that simple, however. Have a look at the implementations of the statistical functions like `sum`, or the set functions like `unique_values`, for examples where more effort is required to recover the source cells.
-
-Note that a lot of the implementation is not concerned with tracking dependencies _per se_, and as a result has been copied from the implementation of the array API for NumPy at https://github.com/data-apis/numpy/blob/array-api/numpy/_array_api.
+Have a look at [`array-tracker`](https://github.com/tomwhite/array-tracker) to understand how the cell dependencies are tracked.
 
 ### Representation
 
-While convenient for computation, the source arrays are not so useful for producing visualizations of array operations. For this, there is a more object-oriented, JSON-friendly representation of an array, encapsulated by an `ArrayRepresentation` object.
+While convenient for computation, the source arrays are not so useful for producing visualizations of array operations. For this, there is a more object-oriented, JSON-friendly representation of an array, encapsulated by an `ArrayRepresentation` object in op-art.
 
 The `ArrayRepresentation` is designed to contain enough information so that a visualization component can render it in a useful way. It contains the array's ID, dtype kind, shape, and number of dimensions. It also contains metadata about the cells in the array. Each cell is given a tracking ID, and crucially a `sources` attribute which references the cells that it was created from.
 
@@ -125,7 +110,7 @@ The implementation here uses [D3](https://d3js.org/), and the idea of [object co
 How to build and test the library (for developers):
 
 ```bash
-conda create --name op-art python=3.8
+conda create --name op-art python=3.12
 conda activate op-art
 pip install -r requirements.txt
 pytest
